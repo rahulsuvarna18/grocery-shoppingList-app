@@ -5,7 +5,7 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-const LayoutContainer = styled.div`
+const LayoutContainer = styled.main`
   display: flex;
   flex-direction: column;
   align-items: center;
