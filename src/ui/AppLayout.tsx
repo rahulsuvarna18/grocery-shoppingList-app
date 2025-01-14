@@ -14,7 +14,7 @@ const LayoutContainer = styled.div`
 `;
 
 const Header = styled.header`
-  width: 100%;
+  width: 70%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -66,7 +66,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <LayoutContainer>
       <Header>
         <Logo>Grocery App</Logo>
-        <Avatar>A</Avatar>
+        <Avatar>R</Avatar>
       </Header>
       <WelcomeHeading>Welcome to your grocery list!</WelcomeHeading>
       <InputContainer>
