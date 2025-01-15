@@ -42,20 +42,6 @@ const Avatar = styled.div`
   cursor: pointer;
 `;
 
-const InputContainer = styled.div`
-  width: 100%;
-  max-width: 500px;
-  margin: 16px 0;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 8px;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
 const WelcomeHeading = styled.h1`
   color: #333;
   margin-top: 16px;
@@ -69,9 +55,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Avatar>R</Avatar>
       </Header>
       <WelcomeHeading>Welcome to your grocery list!</WelcomeHeading>
-      <InputContainer>
-        <Input type="text" placeholder="What do you need to buy?" />
-      </InputContainer>
+      {/* <Input selectedListId /> */}
       {children}
     </LayoutContainer>
   );
