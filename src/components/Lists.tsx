@@ -5,26 +5,14 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import styled from "styled-components";
 import Input from "../ui/Input";
+import RecentlyDeleted from "./RecentlyDeleted";
+import GroceryItemCards from "../ui/GroceryItemCards";
+import GroceryListCard from "../ui/GroceryListCards";
 
 const Wrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
-
   gap: 10px;
-`;
-
-const Card = styled.div`
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #e9ecef;
-  }
 `;
 
 const ItemsWrapper = styled.div`
@@ -62,7 +50,7 @@ const BackButton = styled.button`
 
 export const Lists = () => {
   const {
-    isLoading,
+    isPending,
     data: groceryLists,
     error,
   } = useQuery({
@@ -72,7 +60,7 @@ export const Lists = () => {
 
   const [selectedList, setSelectedList] = useState<number | null>(null);
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isPending) return <LoadingSpinner />;
 
   if (error) return <Error message={error.message} />;
 
@@ -80,19 +68,20 @@ export const Lists = () => {
   if (selectedList !== null) {
     const selectedGroceryList = groceryLists?.find((list) => list.id === selectedList);
     const groceryItems = selectedGroceryList?.grocery_items.split(",") || [];
+    const recentlyDeletedGroceryItems = selectedGroceryList?.recently_used.split(",") || [];
 
     return (
       <Wrapper>
         <Input selectedListId={selectedList} />
-
         <ItemsWrapper>
-          {groceryItems.map((item: string, index: number) => (
-            <Card key={`${selectedList}-${index}`}>{item.trim()}</Card>
-          ))}
+          <GroceryItemCards id={selectedList} groceryLists={groceryItems} />
         </ItemsWrapper>
         <ButtonWrapper>
           <BackButton onClick={() => setSelectedList(null)}>Back to List</BackButton>
         </ButtonWrapper>
+        <ItemsWrapper>
+          <RecentlyDeleted recentlyDeletedItems={recentlyDeletedGroceryItems} />
+        </ItemsWrapper>
       </Wrapper>
     );
   }
@@ -100,11 +89,7 @@ export const Lists = () => {
   // Show grocery list names
   return (
     <Wrapper>
-      {groceryLists?.map((groceryList) => (
-        <Card key={groceryList.id} onClick={() => setSelectedList(groceryList.id)}>
-          {groceryList.grocery_list_name}
-        </Card>
-      ))}
+      <GroceryListCard groceryLists={groceryLists || []} onCardClick={(id) => setSelectedList(id)} />
     </Wrapper>
   );
 };

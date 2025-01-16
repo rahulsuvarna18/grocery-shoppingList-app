@@ -48,7 +48,7 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
   // Handle form submission
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     updateGroceryItems(
-      { id: selectedListId, newItem: data.newItem }, // Replace `1` with the actual ID of the list
+      { id: selectedListId, newItem: data.newItem },
       {
         onSuccess: () => {
           reset(); // Reset the input field after successful addition

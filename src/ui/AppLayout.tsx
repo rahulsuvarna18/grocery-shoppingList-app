@@ -55,7 +55,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <Avatar>R</Avatar>
       </Header>
       <WelcomeHeading>Welcome to your grocery list!</WelcomeHeading>
-      {/* <Input selectedListId /> */}
       {children}
     </LayoutContainer>
   );
