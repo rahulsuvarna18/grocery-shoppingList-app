@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import useUpdateRecentlyDeleted from "../services/Mutations/useUpdateRecentlyDeletedItems";
 
 const Wrapper = styled.div`
   display: flex;
@@ -17,16 +18,26 @@ const Card = styled.div`
 `;
 
 interface GroceryItemCardsProps {
-  groceryLists:
-    | {
-        id: number;
-        grocery_items: string;
-      }[]
-    | undefined;
+  groceryLists: string[];
+  id: number; // ID of the grocery list for mutation
 }
 
-const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists }) => {
-  return <Wrapper>{groceryLists?.map((groceryList) => groceryList.grocery_items.split(",").map((item, index) => <Card key={`${groceryList.id}-${index}`}>{item.trim()}</Card>))}</Wrapper>;
+const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists, id }) => {
+  const { updateRecentlyDeleted, isUpdating } = useUpdateRecentlyDeleted();
+
+  const handleDelete = (item: string) => {
+    updateRecentlyDeleted({ id, itemToRemove: item });
+  };
+
+  return (
+    <Wrapper>
+      {groceryLists?.map((groceryList) => (
+        <Card key={groceryList} onClick={() => handleDelete(groceryList)}>
+          {groceryList} {isUpdating && "(Updating...)"}{" "}
+        </Card>
+      ))}
+    </Wrapper>
+  );
 };
 
 export default GroceryItemCards;
