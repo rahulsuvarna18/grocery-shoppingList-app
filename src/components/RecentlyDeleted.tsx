@@ -42,7 +42,7 @@ interface RecentlyDeletedProps {
 const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems }) => {
   return (
     <Wrapper>
-      <Title>Recently Deleted</Title>
+      <Title>Recently Bought</Title>
       <ItemsWrapper>
         {recentlyDeletedItems.map((item: string, index: number) => (
           <Card key={index}>{item.trim()}</Card>
