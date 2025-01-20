@@ -75,3 +75,34 @@ export const updateRecentlyDeletedItems = async ({ id, itemToRemove }: { id: num
     throw new Error(updateError.message);
   }
 };
+
+export const deleteRecentlyDeletedItem = async ({ id, itemToRemove }: { id: number; itemToRemove: string }): Promise<void> => {
+  // Fetch the current data
+  const { data: groceryListData, error: fetchError } = await supabase.from("Grocery List").select("recently_used").eq("id", id).single();
+
+  if (fetchError) {
+    console.error("Error fetching recently deleted list:", fetchError.message);
+    throw new Error(fetchError.message);
+  }
+
+  const { recently_used } = groceryListData || {};
+
+  // Remove the item from recently_used
+  const updatedRecentlyDeletedItems = recently_used
+    .split(",")
+    .filter((item: string) => item.trim() !== itemToRemove)
+    .join(",");
+
+  // Update the database with modified data
+  const { error: updateError } = await supabase
+    .from("Grocery List")
+    .update({
+      recently_used: updatedRecentlyDeletedItems,
+    })
+    .eq("id", id);
+
+  if (updateError) {
+    console.error("Error updating recently deleted list:", updateError.message);
+    throw new Error(updateError.message);
+  }
+};

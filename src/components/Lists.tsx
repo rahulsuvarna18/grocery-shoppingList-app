@@ -18,7 +18,10 @@ const Wrapper = styled.div`
 const ItemsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap; /* Allows wrapping of grocery item cards */
-  gap: 10px;
+  gap: 10px; /* Adds space between items */
+  justify-content: left; /* Centers items horizontally */
+
+  width: 100%; /* Ensures it spans the full width of the parent */
 `;
 
 const ButtonWrapper = styled.div`
@@ -80,7 +83,7 @@ export const Lists = () => {
           <BackButton onClick={() => setSelectedList(null)}>Back to List</BackButton>
         </ButtonWrapper>
         <ItemsWrapper>
-          <RecentlyDeleted recentlyDeletedItems={recentlyDeletedGroceryItems} />
+          <RecentlyDeleted id={selectedList} recentlyDeletedItems={recentlyDeletedGroceryItems} />
         </ItemsWrapper>
       </Wrapper>
     );
