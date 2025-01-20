@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import useDeleteRecentlyDeletedItem from "../services/Mutations/useDeleteRecentlyDeletedItem";
 
 const Wrapper = styled.div`
   display: flex;
@@ -21,7 +22,7 @@ const ItemsWrapper = styled.div`
   gap: 10px;
 `;
 
-const Card = styled.div`
+const Card = styled.button`
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -35,19 +36,42 @@ const Card = styled.div`
   }
 `;
 
+const EmptyMessage = styled.div`
+  font-size: 16px;
+  color: #888;
+  text-align: center;
+  margin-top: 20px;
+`;
+
 interface RecentlyDeletedProps {
   recentlyDeletedItems: string[];
+  id: number;
 }
 
-const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems }) => {
+const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems, id }) => {
+  const { deleteRecentlyDeletedItem, isDeleting } = useDeleteRecentlyDeletedItem();
+
+  // Filter out empty strings
+  const filteredItems = recentlyDeletedItems.filter((item) => item.trim() !== "");
+
+  const handleDelete = (item: string) => {
+    deleteRecentlyDeletedItem({ id, itemToRemove: item });
+  };
+
   return (
     <Wrapper>
       <Title>Recently Bought</Title>
-      <ItemsWrapper>
-        {recentlyDeletedItems.map((item: string, index: number) => (
-          <Card key={index}>{item.trim()}</Card>
-        ))}
-      </ItemsWrapper>
+      {filteredItems.length === 0 ? (
+        <EmptyMessage>No items in the recently bought list.</EmptyMessage>
+      ) : (
+        <ItemsWrapper>
+          {filteredItems.map((item: string, index: number) => (
+            <Card key={index} disabled={isDeleting} onClick={() => handleDelete(item)}>
+              {item.trim()}
+            </Card>
+          ))}
+        </ItemsWrapper>
+      )}
     </Wrapper>
   );
 };

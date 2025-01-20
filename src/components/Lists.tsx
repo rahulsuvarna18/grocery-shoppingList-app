@@ -83,7 +83,7 @@ export const Lists = () => {
           <BackButton onClick={() => setSelectedList(null)}>Back to List</BackButton>
         </ButtonWrapper>
         <ItemsWrapper>
-          <RecentlyDeleted recentlyDeletedItems={recentlyDeletedGroceryItems} />
+          <RecentlyDeleted id={selectedList} recentlyDeletedItems={recentlyDeletedGroceryItems} />
         </ItemsWrapper>
       </Wrapper>
     );
