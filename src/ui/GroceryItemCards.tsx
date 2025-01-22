@@ -1,74 +1,147 @@
 import React from "react";
 import styled from "styled-components";
 import useUpdateRecentlyDeleted from "../services/Mutations/useUpdateRecentlyDeletedItems";
+import { ShoppingBasket } from "lucide-react";
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-start; /* Ensures items align to the left */
-  align-items: flex-start; /* Keeps items aligned at the top */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  width: 100%;
+  padding: 16px 0;
 `;
 
-const GradientButton = styled.button`
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(45deg, #ff6f61, #ff9671);
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
+const ItemCard = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  aspect-ratio: 1;
+  position: relative;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: #4caf50;
   }
 
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 `;
 
-const EmptyMessage = styled.div`
-  font-size: 16px;
-  color: #888;
+const ItemInitial = styled.div`
+  width: 60px;
+  height: 60px;
+  background-color: #f0fdf4;
+  color: #4caf50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+`;
+
+const ItemName = styled.span`
+  font-size: 14px;
+  color: #333;
   text-align: center;
-  margin-top: 20px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  width: 100%;
+  text-align: center;
+`;
+
+const EmptyIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4caf50;
+  margin-bottom: 8px;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+`;
+
+const EmptyText = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  max-width: 400px;
 `;
 
 interface GroceryItemCardsProps {
   groceryLists: string[];
-  id: number; // ID of the grocery list for mutation
+  id: number;
 }
 
 const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists, id }) => {
   const { updateRecentlyDeleted, isUpdating } = useUpdateRecentlyDeleted();
-
-  // Filter out empty strings from the grocery list
   const filteredGroceryLists = groceryLists.filter((item) => item.trim() !== "");
 
   const handleDelete = (item: string) => {
     updateRecentlyDeleted({ id, itemToRemove: item });
   };
 
+  if (filteredGroceryLists.length === 0) {
+    return (
+      <EmptyState>
+        <EmptyIcon>
+          <ShoppingBasket size={32} />
+        </EmptyIcon>
+        <EmptyTitle>Your Shopping List is Empty</EmptyTitle>
+        <EmptyText>
+          Start adding items to your list using the input field above. 
+          Each item you add will appear here as a card.
+        </EmptyText>
+      </EmptyState>
+    );
+  }
+
   return (
-    <>
-      {filteredGroceryLists.length > 0 ? (
-        <Wrapper>
-          {filteredGroceryLists.map((groceryList) => (
-            <GradientButton key={groceryList} onClick={() => handleDelete(groceryList)} disabled={isUpdating}>
-              {groceryList}
-            </GradientButton>
-          ))}
-        </Wrapper>
-      ) : (
-        <EmptyMessage>Your Shopping List is empty</EmptyMessage>
-      )}
-    </>
+    <Wrapper>
+      {filteredGroceryLists.map((item) => (
+        <ItemCard 
+          key={item} 
+          onClick={() => handleDelete(item)} 
+          disabled={isUpdating}
+        >
+          <ItemInitial>
+            {item.charAt(0).toUpperCase()}
+          </ItemInitial>
+          <ItemName>{item}</ItemName>
+        </ItemCard>
+      ))}
+    </Wrapper>
   );
 };
 
