@@ -3,7 +3,8 @@ import styled from "styled-components";
 import { useNavigate } from 'react-router-dom';
 import useDeleteGroceryList from "../services/Mutations/useDeleteGroceryList";
 import Modal from './Modal/Modal';
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
+import useUpdateGroceryList from "../services/Mutations/useUpdateGroceryList";
 
 const Wrapper = styled.div`
   display: grid;
@@ -46,10 +47,27 @@ const ListInfo = styled.div`
   font-size: 0.9rem;
 `;
 
-const DeleteButton = styled.button`
+const ItemCount = styled.div`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background-color: #f0fdf4;
+  color: #4caf50;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 12px;
+`;
+
+const ButtonGroup = styled.div`
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  gap: 8px;
+`;
+
+const IconButton = styled.button<{ $variant?: 'delete' }>`
   background: none;
   border: none;
   color: #666;
@@ -62,27 +80,53 @@ const DeleteButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #fee2e2;
-    color: #ef4444;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background-color: ${props => props.$variant === 'delete' ? '#fee2e2' : '#e0e7ff'};
+    color: ${props => props.$variant === 'delete' ? '#ef4444' : '#4f46e5'};
   }
 `;
 
-const ItemCount = styled.div`
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  background-color: #f0fdf4;
-  color: #4caf50;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 12px;
+const Input = styled.input`
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
+
+  &:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+  }
 `;
+
+const ColorGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+`;
+
+const ColorOption = styled.button<{ $bgColor: string; $isSelected: boolean }>`
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px solid ${props => props.$isSelected ? '#4caf50' : '#e0e0e0'};
+  background-color: ${props => props.$bgColor};
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const COLORS = [
+  '#FFFFFF',
+  '#FF9B9B', '#FFB4B4', '#FFDEB4', '#FFE4C0', '#FFF3E2',
+  '#B4E4FF', '#95BDFF', '#DFFFD8', '#B4F8C8', '#A0E4CB',
+  '#FFABE1', '#C0DEFF', '#E3DFFD', '#FFF4D2', '#FFCEFE',
+];
 
 interface GroceryListCardProps {
   groceryLists: { 
@@ -96,8 +140,13 @@ interface GroceryListCardProps {
 const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
   const navigate = useNavigate();
   const { deleteList, isDeleting } = useDeleteGroceryList();
+  const { updateList, isUpdating } = useUpdateGroceryList();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedList, setSelectedList] = useState<{ id: number; name: string; color: string } | null>(null);
+  const [editName, setEditName] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
 
   const handleDelete = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -112,8 +161,37 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
     }
   };
 
+  const handleEdit = (e: React.MouseEvent, list: { id: number; name: string; color: string }) => {
+    e.stopPropagation();
+    setSelectedList(list);
+    setEditName(list.name);
+    setSelectedColor(list.color || '#FFFFFF');
+    setEditModalOpen(true);
+  };
+
+  const handleUpdate = () => {
+    if (selectedList && editName.trim()) {
+      updateList(
+        { 
+          id: selectedList.id, 
+          name: editName.trim(),
+          color: selectedColor || '#FFFFFF'
+        },
+        {
+          onSuccess: () => {
+            setEditModalOpen(false);
+            setSelectedList(null);
+            setEditName("");
+            setSelectedColor("");
+          }
+        }
+      );
+    }
+  };
+
   const getItemCount = (items: string) => {
-    return items.split(',').filter(item => item.trim()).length;
+    const count = items.split(',').filter(item => item.trim()).length;
+    return `${count} ${count === 1 ? 'item' : 'items'}`;
   };
 
   return (
@@ -128,14 +206,27 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
             <div>
               <ListTitle>{groceryList.grocery_list_name}</ListTitle>
               <ListInfo>Created on {new Date().toLocaleDateString()}</ListInfo>
-              <ItemCount>{getItemCount(groceryList.grocery_items)} items</ItemCount>
+              <ItemCount>{getItemCount(groceryList.grocery_items)}</ItemCount>
             </div>
-            <DeleteButton
-              onClick={(e) => handleDelete(e, groceryList.id)}
-              disabled={isDeleting}
-            >
-              <Trash2 size={18} />
-            </DeleteButton>
+            <ButtonGroup>
+              <IconButton
+                onClick={(e) => handleEdit(e, { 
+                  id: groceryList.id, 
+                  name: groceryList.grocery_list_name,
+                  color: groceryList.color 
+                })}
+                disabled={isUpdating}
+              >
+                <Pencil size={18} />
+              </IconButton>
+              <IconButton
+                $variant="delete"
+                onClick={(e) => handleDelete(e, groceryList.id)}
+                disabled={isDeleting}
+              >
+                <Trash2 size={18} />
+              </IconButton>
+            </ButtonGroup>
           </Card>
         ))}
       </Wrapper>
@@ -151,6 +242,45 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
           </Modal.Button>
           <Modal.Button variant="danger" onClick={confirmDelete}>
             Delete
+          </Modal.Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
+        <Modal.Header>Edit List</Modal.Header>
+        <Modal.Content>
+          <Input
+            autoFocus
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            placeholder="Enter new list name..."
+            disabled={isUpdating}
+          />
+          <ColorGrid>
+            {COLORS.map((color) => (
+              <ColorOption
+                key={color}
+                $bgColor={color}
+                $isSelected={selectedColor === color}
+                onClick={() => setSelectedColor(color)}
+              />
+            ))}
+          </ColorGrid>
+        </Modal.Content>
+        <Modal.Footer>
+          <Modal.Button onClick={() => setEditModalOpen(false)}>
+            Cancel
+          </Modal.Button>
+          <Modal.Button 
+            onClick={handleUpdate}
+            disabled={
+              isUpdating || 
+              !editName.trim() || 
+              (editName === selectedList?.name && selectedColor === selectedList?.color)
+            }
+          >
+            {isUpdating ? 'Updating...' : 'Update'}
           </Modal.Button>
         </Modal.Footer>
       </Modal>

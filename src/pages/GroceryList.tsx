@@ -7,33 +7,65 @@ import GroceryItemCards from '../ui/GroceryItemCards';
 import RecentlyDeleted from '../components/RecentlyDeleted';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import Error from '../ui/Error';
+import { ArrowLeft } from 'lucide-react';
 
 const Wrapper = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  align-items: center;
+`;
+
+const TopBar = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  padding-bottom: 0;
+  width: 100%;
+  max-width: 1200px;
+`;
+
+const ContentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-top: -8px;
+`;
+
+const BackButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #4f46e5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 const ItemsWrapper = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: left;
+  justify-content: center;
   width: 100%;
-`;
-
-const BackButton = styled.button`
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #0056b3;
-  }
 `;
 
 const GroceryList = () => {
@@ -71,22 +103,27 @@ const GroceryList = () => {
 
   return (
     <Wrapper>
-      <BackButton onClick={() => navigate('/home')}>
-        Back to Lists
-      </BackButton>
-      <Input selectedListId={selectedList.id} />
-      <ItemsWrapper>
-        <GroceryItemCards 
-          id={selectedList.id} 
-          groceryLists={groceryItems} 
-        />
-      </ItemsWrapper>
-      <ItemsWrapper>
-        <RecentlyDeleted 
-          id={selectedList.id} 
-          recentlyDeletedItems={recentlyDeletedGroceryItems} 
-        />
-      </ItemsWrapper>
+      <TopBar>
+        <BackButton onClick={() => navigate('/home')}>
+          <ArrowLeft size={18} />
+          Back to Lists
+        </BackButton>
+      </TopBar>
+      <ContentContainer>
+        <Input selectedListId={selectedList.id} />
+        <ItemsWrapper>
+          <GroceryItemCards 
+            id={selectedList.id} 
+            groceryLists={groceryItems} 
+          />
+        </ItemsWrapper>
+        <ItemsWrapper>
+          <RecentlyDeleted 
+            id={selectedList.id} 
+            recentlyDeletedItems={recentlyDeletedGroceryItems} 
+          />
+        </ItemsWrapper>
+      </ContentContainer>
     </Wrapper>
   );
 };

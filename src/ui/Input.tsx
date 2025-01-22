@@ -5,30 +5,57 @@ import useUpdateGroceryItems from "../services/Mutations/useUpdateGroceryItems";
 
 const InputContainer = styled.div`
   width: 100%;
-  max-width: 500px;
-  margin: 16px 0;
+  max-width: 600px;
+  margin: 24px 0;
+`;
+
+const Form = styled.form`
+  display: flex;
+  gap: 12px;
+  width: 100%;
 `;
 
 const StyledInput = styled.input`
-  width: 100%;
-  padding: 8px;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4caf50;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &::placeholder {
+    color: #adb5bd;
+  }
 `;
 
 const AddButton = styled.button`
-  margin-top: 20px;
-  padding: 10px 15px;
-  background-color: #28a745;
+  padding: 12px 24px;
+  background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 
   &:hover {
-    background-color: #218838;
-    transition: 0.3s;
+    background-color: #43a047;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background-color: #a8e0ab;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -45,13 +72,18 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
   const { register, handleSubmit, reset } = useForm<FormValues>();
   const { updateGroceryItems, isUpdating } = useUpdateGroceryItems();
 
-  // Handle form submission
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   const onSubmit: SubmitHandler<FormValues> = (data) => {
+    const capitalizedItem = capitalizeFirstLetter(data.newItem.trim());
+    
     updateGroceryItems(
-      { id: selectedListId, newItem: data.newItem },
+      { id: selectedListId, newItem: capitalizedItem },
       {
         onSuccess: () => {
-          reset(); // Reset the input field after successful addition
+          reset();
         },
       }
     );
@@ -59,13 +91,16 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
 
   return (
     <InputContainer>
-      {/* Use handleSubmit from React Hook Form */}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <StyledInput {...register("newItem", { required: "Please enter a grocery item." })} type="text" placeholder="What do you need to buy?" />
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <StyledInput 
+          {...register("newItem", { required: "Please enter a grocery item." })} 
+          type="text" 
+          placeholder="Add an item to your list..." 
+        />
         <AddButton type="submit" disabled={isUpdating}>
-          {isUpdating ? "Adding..." : "Add"}
+          {isUpdating ? "Adding..." : "Add Item"}
         </AddButton>
-      </form>
+      </Form>
     </InputContainer>
   );
 };

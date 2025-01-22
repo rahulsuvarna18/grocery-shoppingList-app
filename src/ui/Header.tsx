@@ -155,7 +155,7 @@ const Header = () => {
       <HeaderContent>
         <LogoContainer onClick={() => navigate('/home')}>
           <ShoppingCart size={24} />
-          <span>Grocery App</span>
+          <span>Grocer AI</span>
         </LogoContainer>
         <UserSection>
           <UserInfo>

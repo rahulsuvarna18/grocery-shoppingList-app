@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { GroceryLists } from "../components/GroceryLists";
+import ListRecommendations from "../components/ListRecommendations";
 
 const Container = styled.div`
   display: flex;
@@ -14,6 +15,7 @@ const HomePage = () => {
   return (
     <Container>
       <GroceryLists />
+      <ListRecommendations />
     </Container>
   );
 };
