@@ -15,6 +15,7 @@ interface GroceryList {
 
 interface CreateGroceryListProps {
   name: string;
+  color: string;
 }
 
 export const updateGroceryItems = async ({ id, newItem }: UpdateGroceryItemsProps): Promise<GroceryList[]> => {
@@ -111,10 +112,21 @@ export const deleteRecentlyDeletedItem = async ({ id, itemToRemove }: { id: numb
   }
 };
 
-export const createGroceryList = async ({ name }: CreateGroceryListProps): Promise<GroceryList[]> => {
+export const createGroceryList = async ({ name, color }: CreateGroceryListProps): Promise<GroceryList[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) throw new Error("User not authenticated");
+
+  // Check if a list with this name already exists for the user
+  const { data: existingLists } = await supabase
+    .from("Grocery List")
+    .select("grocery_list_name")
+    .eq('user_id', user.id)
+    .ilike('grocery_list_name', name);
+
+  if (existingLists && existingLists.length > 0) {
+    throw new Error("A list with this name already exists. Please choose a different name.");
+  }
 
   const { data, error } = await supabase
     .from("Grocery List")
@@ -123,7 +135,8 @@ export const createGroceryList = async ({ name }: CreateGroceryListProps): Promi
         grocery_list_name: name,
         grocery_items: "",
         recently_used: "",
-        user_id: user.id
+        user_id: user.id,
+        color: color
       }
     ])
     .select();
@@ -134,4 +147,16 @@ export const createGroceryList = async ({ name }: CreateGroceryListProps): Promi
   }
 
   return data;
+};
+
+export const deleteGroceryList = async (id: number): Promise<void> => {
+  const { error } = await supabase
+    .from("Grocery List")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error deleting grocery list:", error.message);
+    throw new Error(error.message);
+  }
 };
