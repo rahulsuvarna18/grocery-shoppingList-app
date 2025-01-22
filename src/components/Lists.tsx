@@ -8,6 +8,7 @@ import Input from "../ui/Input";
 import RecentlyDeleted from "./RecentlyDeleted";
 import GroceryItemCards from "../ui/GroceryItemCards";
 import GroceryListCard from "../ui/GroceryListCards";
+import CreateGroceryList from "./CreateGroceryList";
 
 const Wrapper = styled.div`
   display: flex;
@@ -89,9 +90,10 @@ export const Lists = () => {
     );
   }
 
-  // Show grocery list names
+  // Show grocery list names and create form
   return (
     <Wrapper>
+      <CreateGroceryList />
       <GroceryListCard groceryLists={groceryLists || []} onCardClick={(id) => setSelectedList(id)} />
     </Wrapper>
   );

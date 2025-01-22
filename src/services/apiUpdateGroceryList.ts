@@ -13,6 +13,10 @@ interface GroceryList {
   recently_used: string;
 }
 
+interface CreateGroceryListProps {
+  name: string;
+}
+
 export const updateGroceryItems = async ({ id, newItem }: UpdateGroceryItemsProps): Promise<GroceryList[]> => {
   // Fetch the current value of the grocery_items column
   const { data: allExistingData, error: fetchError } = await supabase.from("Grocery List").select("grocery_items").eq("id", id).single();
@@ -105,4 +109,29 @@ export const deleteRecentlyDeletedItem = async ({ id, itemToRemove }: { id: numb
     console.error("Error updating recently deleted list:", updateError.message);
     throw new Error(updateError.message);
   }
+};
+
+export const createGroceryList = async ({ name }: CreateGroceryListProps): Promise<GroceryList[]> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) throw new Error("User not authenticated");
+
+  const { data, error } = await supabase
+    .from("Grocery List")
+    .insert([
+      {
+        grocery_list_name: name,
+        grocery_items: "",
+        recently_used: "",
+        user_id: user.id
+      }
+    ])
+    .select();
+
+  if (error) {
+    console.error("Error creating grocery list:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data;
 };

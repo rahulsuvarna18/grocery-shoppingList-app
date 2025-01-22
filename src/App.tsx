@@ -14,13 +14,11 @@ const LeftBox = styled.div`
 
 const App: React.FC = () => {
   return (
-    <>
-      <AppLayout>
-        <LeftBox>
-          <Lists />
-        </LeftBox>
-      </AppLayout>
-    </>
+    <AppLayout>
+      <LeftBox>
+        <Lists />
+      </LeftBox>
+    </AppLayout>
   );
 };
 
