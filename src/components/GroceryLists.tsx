@@ -3,17 +3,9 @@ import { getGroceryLists } from "../services/apiGroceryList";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import styled from "styled-components";
-// import Input from "../ui/Input";
-// import RecentlyDeleted from "./RecentlyDeleted";
-// import GroceryItemCards from "../ui/GroceryItemCards";
+
 import GroceryListCard from "../ui/GroceryListCards";
 import CreateGroceryList from "./CreateGroceryList";
-
-// const Wrapper = styled.div`
-//   display: flex;
-//   flex-wrap: wrap;
-//   gap: 10px;
-// `;
 
 const EmptyState = styled.div`
   text-align: center;
@@ -37,43 +29,13 @@ const EmptyStateText = styled.p`
   color: #666;
 `;
 
-// const ItemsWrapper = styled.div`
-//   display: flex;
-//   flex-wrap: wrap; /* Allows wrapping of grocery item cards */
-//   gap: 10px; /* Adds space between items */
-//   justify-content: left; /* Centers items horizontally */
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
 
-//   width: 100%; /* Ensures it spans the full width of the parent */
-// `;
-
-// const ButtonWrapper = styled.div`
-//   width: 100%;
-//   margin-top: 20px;
-//   display: flex;
-//   justify-content: center;
-// `;
-
-// const BackButton = styled.button`
-//   padding: 10px 15px;
-//   background-color: #007bff;
-//   color: white;
-//   border: none;
-//   border-radius: 5px;
-//   font-size: 16px;
-//   cursor: pointer;
-
-//   &:hover {
-//     background-color: #0056b3;
-//     transition: background-color 0.3s ease;
-//   }
-
-//   &:focus {
-//     outline: none;
-//     box-shadow: 0 0 4px #007bff;
-//   }
-// `;
-
-export const Lists = () => {
+export const GroceryLists = () => {
   const {
     isPending,
     data: groceryLists,
@@ -88,7 +50,9 @@ export const Lists = () => {
 
   return (
     <>
-      <CreateGroceryList />
+      <ButtonContainer>
+        <CreateGroceryList />
+      </ButtonContainer>
       {groceryLists && groceryLists.length > 0 ? (
         <GroceryListCard groceryLists={groceryLists} />
       ) : (

@@ -1,65 +1,49 @@
-import React from "react";
 import styled, { keyframes } from "styled-components";
 
-const LoadingSpinner: React.FC = () => {
+const LoadingSpinner = () => {
   return (
     <SpinnerWrapper>
-      <SpinnerRing>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </SpinnerRing>
+      <SpinnerContainer>
+        <Dot $delay="0s" />
+        <Dot $delay="0.1s" />
+        <Dot $delay="0.2s" />
+      </SpinnerContainer>
     </SpinnerWrapper>
   );
 };
 
 export default LoadingSpinner;
 
-// Styled components
+const bounce = keyframes`
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+`;
+
 const SpinnerWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f9f9f9;
+  min-height: 200px;
 `;
 
-const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+const SpinnerContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
-const SpinnerRing = styled.div`
+const Dot = styled.div<{ $delay: string }>`
+  width: 12px;
+  height: 12px;
+  background-color: #4caf50;
+  border-radius: 50%;
   display: inline-block;
-  position: relative;
-  width: 64px;
-  height: 64px;
-
-  div {
-    box-sizing: border-box;
-    display: block;
-    position: absolute;
-    width: 51px;
-    height: 51px;
-    margin: 6px;
-    border: 6px solid #3eaf0e;
-    border-radius: 50%;
-    animation: ${spin} 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: #3eaf0e transparent transparent transparent;
-  }
-
-  div:nth-child(1) {
-    animation-delay: -0.45s;
-  }
-  div:nth-child(2) {
-    animation-delay: -0.3s;
-  }
-  div:nth-child(3) {
-    animation-delay: -0.15s;
-  }
+  animation: ${bounce} 1.4s infinite ease-in-out both;
+  animation-delay: ${props => props.$delay};
 `;
