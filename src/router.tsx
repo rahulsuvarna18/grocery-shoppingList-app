@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import GroceryList from "./pages/GroceryList";
 import AppLayout from "./ui/AppLayout";
 import { useAuth } from "./context/AuthContext";
+import Inventory from "./pages/Inventory";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +42,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <GroceryList />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/inventory",
+    element: (
+      <ProtectedRoute>
+        <Inventory />
       </ProtectedRoute>
     ),
   },
