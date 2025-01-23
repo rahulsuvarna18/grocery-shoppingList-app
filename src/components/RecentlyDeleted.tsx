@@ -170,11 +170,13 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 48px 24px;
+  padding: 32px 24px;
   background-color: #f8fafc;
   border-radius: 12px;
   width: 100%;
   text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const EmptyIcon = styled.div`
@@ -199,6 +201,21 @@ const EmptyText = styled.p`
   color: #666;
   margin: 0;
   max-width: 400px;
+  line-height: 1.5;
+`;
+
+const ItemInitial = styled.div`
+  width: 60px;
+  height: 60px;
+  background-color: #f0fdf4;
+  color: #4caf50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
 `;
 
 interface RecentlyDeletedProps {
@@ -282,8 +299,10 @@ const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems,
             key={item}
             className={deletingItems.has(item) ? 'deleting' : ''}
           >
-            <ItemCard onClick={(e) => handleRestore(item)}>
-              <ItemIcon>{itemIcons[item] || '🛍️'}</ItemIcon>
+            <ItemCard>
+              <ItemInitial>
+                {item.charAt(0).toUpperCase()}
+              </ItemInitial>
               <ItemName>{item}</ItemName>
               <ButtonGroup>
                 <DeleteButton 

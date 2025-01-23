@@ -3,6 +3,55 @@ import styled from "styled-components";
 import useUpdateRecentlyDeleted from "../services/Mutations/useUpdateRecentlyDeletedItems";
 import { ShoppingBasket } from "lucide-react";
 
+
+interface GroceryItemCardsProps {
+  groceryLists: string[];
+  id: number;
+}
+
+const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists, id }) => {
+  const { updateRecentlyDeleted, isUpdating } = useUpdateRecentlyDeleted();
+  const filteredGroceryLists = groceryLists.filter((item) => item.trim() !== "");
+
+  const handleDelete = (item: string) => {
+    updateRecentlyDeleted({ id, itemToRemove: item });
+  };
+
+  if (filteredGroceryLists.length === 0) {
+    return (
+      <EmptyState>
+        <EmptyIcon>
+          <ShoppingBasket size={32} />
+        </EmptyIcon>
+        <EmptyTitle>Your Shopping List is Empty</EmptyTitle>
+        <EmptyText>
+          Start adding items to your list using the input field above. 
+          Each item you add will appear here as a card.
+        </EmptyText>
+      </EmptyState>
+    );
+  }
+
+  return (
+    <Wrapper>
+      {filteredGroceryLists.map((item) => (
+        <ItemCard 
+          key={item} 
+          onClick={() => handleDelete(item)} 
+          disabled={isUpdating}
+        >
+          <ItemInitial>
+            {item.charAt(0).toUpperCase()}
+          </ItemInitial>
+          <ItemName>{item}</ItemName>
+        </ItemCard>
+      ))}
+    </Wrapper>
+  );
+};
+
+export default GroceryItemCards;
+
 const Wrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -12,22 +61,26 @@ const Wrapper = styled.div`
 `;
 
 const ItemCard = styled.button`
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(to bottom right, #fee2e2, #ffffff); /* Red gradient */
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  aspect-ratio: 1;
-  position: relative;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-color: #4caf50;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(239, 68, 68, 0.15); /* Red shadow */
+    border-color: #ef4444;
   }
 
   &:disabled {
@@ -98,51 +151,3 @@ const EmptyText = styled.p`
   margin: 0;
   max-width: 400px;
 `;
-
-interface GroceryItemCardsProps {
-  groceryLists: string[];
-  id: number;
-}
-
-const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists, id }) => {
-  const { updateRecentlyDeleted, isUpdating } = useUpdateRecentlyDeleted();
-  const filteredGroceryLists = groceryLists.filter((item) => item.trim() !== "");
-
-  const handleDelete = (item: string) => {
-    updateRecentlyDeleted({ id, itemToRemove: item });
-  };
-
-  if (filteredGroceryLists.length === 0) {
-    return (
-      <EmptyState>
-        <EmptyIcon>
-          <ShoppingBasket size={32} />
-        </EmptyIcon>
-        <EmptyTitle>Your Shopping List is Empty</EmptyTitle>
-        <EmptyText>
-          Start adding items to your list using the input field above. 
-          Each item you add will appear here as a card.
-        </EmptyText>
-      </EmptyState>
-    );
-  }
-
-  return (
-    <Wrapper>
-      {filteredGroceryLists.map((item) => (
-        <ItemCard 
-          key={item} 
-          onClick={() => handleDelete(item)} 
-          disabled={isUpdating}
-        >
-          <ItemInitial>
-            {item.charAt(0).toUpperCase()}
-          </ItemInitial>
-          <ItemName>{item}</ItemName>
-        </ItemCard>
-      ))}
-    </Wrapper>
-  );
-};
-
-export default GroceryItemCards;
