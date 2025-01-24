@@ -18,7 +18,7 @@ const Title = styled.h2`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     color: #f59e0b;
   }
@@ -86,12 +86,12 @@ const ListRecommendations = () => {
   const handleCardClick = (title: string) => {
     setSelectedTitle(title);
     setIsModalOpen(true);
-    
+
     // Simulate creation after a delay
     setTimeout(() => {
       createGroceryList({ name: title, color: "#FFFFFF" });
       setIsModalOpen(false);
-    }, 2000);
+    }, 900);
   };
 
   return (
@@ -102,11 +102,7 @@ const ListRecommendations = () => {
       </Title>
       <CardsContainer>
         {recommendationsList.map((item) => (
-          <RecommendationCard
-            key={item.title}
-            onClick={() => handleCardClick(item.title)}
-            disabled={isCreating}
-          >
+          <RecommendationCard key={item.title} onClick={() => handleCardClick(item.title)} disabled={isCreating}>
             <CardIcon>{item.emoji}</CardIcon>
             <CardTitle>{item.title}</CardTitle>
           </RecommendationCard>
@@ -115,7 +111,7 @@ const ListRecommendations = () => {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <Modal.Content>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
+          <div style={{ textAlign: "center", padding: "20px" }}>
             <LoadingSpinnerWrapper>
               <LoadingSpinner />
             </LoadingSpinnerWrapper>
@@ -135,4 +131,4 @@ const LoadingSpinnerWrapper = styled.div`
   margin: 20px 0;
 `;
 
-export default ListRecommendations; 
+export default ListRecommendations;

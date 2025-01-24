@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import styled from 'styled-components';
-import supabase from '../services/supabase';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../ui/LoadingSpinner';
+import { useEffect } from "react";
+import styled from "styled-components";
+import supabase from "../services/supabase";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 const LoginContainer = styled.div`
   display: flex;
@@ -99,22 +99,22 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
   const handleGoogleLogin = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/home`
-        }
+          redirectTo: `${window.location.origin}/home`,
+        },
       });
-      
+
       if (error) throw error;
     } catch (error) {
-      console.error('Error logging in:', error);
+      console.error("Error logging in:", error);
     }
   };
 
@@ -125,9 +125,7 @@ const Login = () => {
       <LoginCard>
         <Logo>🛒</Logo>
         <Title>Welcome to Grocery App</Title>
-        <Subtitle>
-          Simplify your shopping experience with smart grocery lists and easy collaboration.
-        </Subtitle>
+        <Subtitle>Simplify your shopping experience with smart grocery lists and easy collaboration.</Subtitle>
         <GoogleButton onClick={handleGoogleLogin}>
           <GoogleIcon src="/google-icon.svg" alt="Google" />
           Continue with Google
@@ -137,4 +135,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;

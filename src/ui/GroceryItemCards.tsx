@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import useUpdateRecentlyDeleted from "../services/Mutations/useUpdateRecentlyDeletedItems";
 import { ShoppingBasket } from "lucide-react";
-
+import EmptyState from "../components/EmptyState/EmptyState";
 
 interface GroceryItemCardsProps {
   groceryLists: string[];
@@ -19,30 +19,29 @@ const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryLists, id })
 
   if (filteredGroceryLists.length === 0) {
     return (
-      <EmptyState>
-        <EmptyIcon>
-          <ShoppingBasket size={32} />
-        </EmptyIcon>
-        <EmptyTitle>Your Shopping List is Empty</EmptyTitle>
-        <EmptyText>
-          Start adding items to your list using the input field above. 
-          Each item you add will appear here as a card.
-        </EmptyText>
-      </EmptyState>
+      <EmptyState
+        icon={<ShoppingBasket size={32} />} // Pass the icon as a prop
+        title="Your Shopping List is Empty"
+        text="Start adding items to your list using the input field above. Each item you add will appear here as a card."
+      />
+      // <EmptyState>
+      //   <EmptyIcon>
+      //     <ShoppingBasket size={32} />
+      //   </EmptyIcon>
+      //   <EmptyTitle>Your Shopping List is Empty</EmptyTitle>
+      //   <EmptyText>
+      //     Start adding items to your list using the input field above.
+      //     Each item you add will appear here as a card.
+      //   </EmptyText>
+      // </EmptyState>
     );
   }
 
   return (
     <Wrapper>
       {filteredGroceryLists.map((item) => (
-        <ItemCard 
-          key={item} 
-          onClick={() => handleDelete(item)} 
-          disabled={isUpdating}
-        >
-          <ItemInitial>
-            {item.charAt(0).toUpperCase()}
-          </ItemInitial>
+        <ItemCard key={item} onClick={() => handleDelete(item)} disabled={isUpdating}>
+          <ItemInitial>{item.charAt(0).toUpperCase()}</ItemInitial>
           <ItemName>{item}</ItemName>
         </ItemCard>
       ))}
@@ -115,39 +114,39 @@ const ItemName = styled.span`
   -webkit-box-orient: vertical;
 `;
 
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 48px 24px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  width: 100%;
-  text-align: center;
-`;
+// const EmptyState = styled.div`
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   gap: 16px;
+//   padding: 48px 24px;
+//   background-color: #f8fafc;
+//   border-radius: 12px;
+//   width: 100%;
+//   text-align: center;
+// `;
 
-const EmptyIcon = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: #f0fdf4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4caf50;
-  margin-bottom: 8px;
-`;
+// const EmptyIcon = styled.div`
+//   width: 64px;
+//   height: 64px;
+//   border-radius: 50%;
+//   background-color: #f0fdf4;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   color: #4caf50;
+//   margin-bottom: 8px;
+// `;
 
-const EmptyTitle = styled.h3`
-  font-size: 18px;
-  color: #333;
-  margin: 0;
-`;
+// const EmptyTitle = styled.h3`
+//   font-size: 18px;
+//   color: #333;
+//   margin: 0;
+// `;
 
-const EmptyText = styled.p`
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-  max-width: 400px;
-`;
+// const EmptyText = styled.p`
+//   font-size: 14px;
+//   color: #666;
+//   margin: 0;
+//   max-width: 400px;
+// `;
