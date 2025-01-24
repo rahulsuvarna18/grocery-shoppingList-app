@@ -4,6 +4,7 @@ import { ShoppingBag, RotateCcw, Trash2 } from "lucide-react";
 import useDeleteRecentlyDeletedItem from "../services/Mutations/useDeleteRecentlyDeletedItem";
 import useRestoreGroceryItem from "../services/Mutations/useRestoreGroceryItem";
 import { getItemIcon } from "../services/iconService";
+import EmptyState from "./EmptyState/EmptyState";
 
 const Wrapper = styled.div`
   display: flex;
@@ -20,7 +21,7 @@ const Title = styled.h3`
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   svg {
     color: #4caf50;
   }
@@ -35,11 +36,11 @@ const CardsContainer = styled.div`
 
 const ItemWrapper = styled.div`
   @keyframes fadeOut {
-    from { 
+    from {
       opacity: 1;
       transform: scale(1);
     }
-    to { 
+    to {
       opacity: 0;
       transform: scale(0.9);
     }
@@ -68,7 +69,7 @@ const ItemCard = styled.div`
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     right: 0;
@@ -80,7 +81,7 @@ const ItemCard = styled.div`
   }
 
   &::after {
-    content: '✓';
+    content: "✓";
     position: absolute;
     top: 2px;
     right: 7px;
@@ -99,15 +100,6 @@ const ItemCard = styled.div`
     opacity: 0.7;
     cursor: not-allowed;
   }
-`;
-
-const ItemIcon = styled.div`
-  font-size: 32px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 `;
 
 const ItemName = styled.span`
@@ -158,50 +150,6 @@ const IconButton = styled.button`
 
 const DeleteButton = styled(IconButton)`
   color: #ef4444;
-`;
-
-// const RestoreButton = styled(IconButton)`
-//   bottom: 8px;
-//   right: 8px;
-// `;
-
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 32px 24px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  width: 100%;
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-const EmptyIcon = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-color: #f0fdf4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4caf50;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 18px;
-  color: #333;
-  margin: 0;
-`;
-
-const EmptyText = styled.p`
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-  max-width: 400px;
-  line-height: 1.5;
 `;
 
 const ItemInitial = styled.div`
@@ -260,7 +208,7 @@ const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems,
   };
 
   const handleDelete = (item: string) => {
-    setDeletingItems(prev => new Set([...prev, item]));
+    setDeletingItems((prev) => new Set([...prev, item]));
     setTimeout(() => {
       deleteRecentlyDeletedItem({ id, itemToRemove: item });
     }, 200); // Match animation duration
@@ -273,16 +221,7 @@ const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems,
           <RotateCcw size={24} />
           Recently Bought
         </Title>
-        <EmptyState>
-          <EmptyIcon>
-            <ShoppingBag size={32} />
-          </EmptyIcon>
-          <EmptyTitle>No Recently Bought Items</EmptyTitle>
-          <EmptyText>
-            Items you mark as bought will appear here. 
-            You can quickly add them back to your shopping list when needed.
-          </EmptyText>
-        </EmptyState>
+        <EmptyState icon={<ShoppingBag size={32} />} title="No Recently Bought Items" text="Done shopping? Add items to this list by clicking the card above." />
       </Wrapper>
     );
   }
@@ -295,17 +234,12 @@ const RecentlyDeleted: React.FC<RecentlyDeletedProps> = ({ recentlyDeletedItems,
       </Title>
       <CardsContainer>
         {filteredItems.map((item) => (
-          <ItemWrapper 
-            key={item}
-            className={deletingItems.has(item) ? 'deleting' : ''}
-          >
+          <ItemWrapper key={item} className={deletingItems.has(item) ? "deleting" : ""}>
             <ItemCard>
-              <ItemInitial>
-                {item.charAt(0).toUpperCase()}
-              </ItemInitial>
+              <ItemInitial>{item.charAt(0).toUpperCase()}</ItemInitial>
               <ItemName>{item}</ItemName>
               <ButtonGroup>
-                <DeleteButton 
+                <DeleteButton
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete(item);

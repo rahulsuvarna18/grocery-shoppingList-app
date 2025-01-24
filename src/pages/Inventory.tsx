@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import styled from 'styled-components';
-import { Plus, Info, CalendarDays, Package, Pencil, Trash2 } from 'lucide-react';
-import Modal from '../ui/Modal/Modal';
+import { useState } from "react";
+import styled from "styled-components";
+import { Plus, Info, CalendarDays, Package, Pencil, Trash2 } from "lucide-react";
+import Modal from "../ui/Modal/Modal";
 import { useInventoryItems } from "../services/Queries/useInventoryItems";
 import useCreateInventoryItem from "../services/Mutations/useCreateInventoryItem";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import useUpdateInventoryItem from "../services/Mutations/useUpdateInventoryItem";
 import useDeleteInventoryItem from "../services/Mutations/useDeleteInventoryItem";
+import EmptyState from "../components/EmptyState/EmptyState";
 
 const Container = styled.div`
   max-width: 1200px;
@@ -92,25 +93,25 @@ const ItemDetail = styled.div`
   }
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 24px;
-  background: #f8fafc;
-  border-radius: 12px;
-  max-width: 600px;
-  margin: 48px auto;
-`;
+// const EmptyState = styled.div`
+//   text-align: center;
+//   padding: 48px 24px;
+//   background: #f8fafc;
+//   border-radius: 12px;
+//   max-width: 600px;
+//   margin: 48px auto;
+// `;
 
-const EmptyStateTitle = styled.h2`
-  font-size: 1.25rem;
-  color: #333;
-  margin-bottom: 12px;
-`;
+// const EmptyStateTitle = styled.h2`
+//   font-size: 1.25rem;
+//   color: #333;
+//   margin-bottom: 12px;
+// `;
 
-const EmptyStateText = styled.p`
-  color: #666;
-  line-height: 1.6;
-`;
+// const EmptyStateText = styled.p`
+//   color: #666;
+//   line-height: 1.6;
+// `;
 
 const InfoButton = styled.button`
   position: fixed;
@@ -197,9 +198,9 @@ const IconButton = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.color === 'danger' ? '#fee2e2' : '#f0fdf4'};
-    border-color: ${props => props.color === 'danger' ? '#ef4444' : '#4caf50'};
-    color: ${props => props.color === 'danger' ? '#ef4444' : '#4caf50'};
+    background: ${(props) => (props.color === "danger" ? "#fee2e2" : "#f0fdf4")};
+    border-color: ${(props) => (props.color === "danger" ? "#ef4444" : "#4caf50")};
+    color: ${(props) => (props.color === "danger" ? "#ef4444" : "#4caf50")};
   }
 `;
 
@@ -207,7 +208,7 @@ interface InventoryItem {
   id: string;
   name: string;
   quantity: number;
-  unit: 'carton' | 'pack' | 'grams' | 'pieces';
+  unit: "carton" | "pack" | "grams" | "pieces";
   expiry_date: string | null;
 }
 
@@ -215,10 +216,10 @@ const Inventory = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [newItem, setNewItem] = useState({
-    name: '',
-    quantity: '',
-    unit: 'pieces',
-    expiryDate: ''
+    name: "",
+    quantity: "",
+    unit: "pieces",
+    expiryDate: "",
   });
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
@@ -233,12 +234,12 @@ const Inventory = () => {
     createItem({
       name: newItem.name,
       quantity: Number(newItem.quantity),
-      unit: newItem.unit as InventoryItem['unit'],
+      unit: newItem.unit as InventoryItem["unit"],
       expiry_date: newItem.expiryDate || null,
     });
 
     setIsCreateModalOpen(false);
-    setNewItem({ name: '', quantity: '', unit: 'pieces', expiryDate: '' });
+    setNewItem({ name: "", quantity: "", unit: "pieces", expiryDate: "" });
   };
 
   const handleEditItem = () => {
@@ -249,18 +250,18 @@ const Inventory = () => {
       updates: {
         name: newItem.name,
         quantity: Number(newItem.quantity),
-        unit: newItem.unit as InventoryItem['unit'],
+        unit: newItem.unit as InventoryItem["unit"],
         expiry_date: newItem.expiryDate || null,
-      }
+      },
     });
 
     setEditingItem(null);
     setIsCreateModalOpen(false);
-    setNewItem({ name: '', quantity: '', unit: 'pieces', expiryDate: '' });
+    setNewItem({ name: "", quantity: "", unit: "pieces", expiryDate: "" });
   };
 
   const handleDeleteItem = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
+    if (window.confirm("Are you sure you want to delete this item?")) {
       deleteItem(id);
     }
   };
@@ -279,16 +280,10 @@ const Inventory = () => {
       </Header>
 
       {!itemsData?.length ? (
-        <EmptyState>
-          <EmptyStateTitle>No Items in Inventory</EmptyStateTitle>
-          <EmptyStateText>
-            Start adding items to your inventory to track quantities and expiry dates.
-            This helps you manage your groceries efficiently and reduce waste.
-          </EmptyStateText>
-        </EmptyState>
+        <EmptyState title="No Items In Inventory" text="Click the button above to add items to your inventory." />
       ) : (
         <CardsGrid>
-          {itemsData.map(item => (
+          {itemsData.map((item) => (
             <Card key={item.id}>
               <CardContent>
                 <CardActions>
@@ -299,18 +294,14 @@ const Inventory = () => {
                         name: item.name,
                         quantity: String(item.quantity),
                         unit: item.unit,
-                        expiryDate: item.expiry_date || ''
+                        expiryDate: item.expiry_date || "",
                       });
                       setIsCreateModalOpen(true);
                     }}
                   >
                     <Pencil size={16} />
                   </IconButton>
-                  <IconButton
-                    color="danger"
-                    onClick={() => handleDeleteItem(item.id)}
-                    disabled={isDeleting}
-                  >
+                  <IconButton color="danger" onClick={() => handleDeleteItem(item.id)} disabled={isDeleting}>
                     <Trash2 size={16} />
                   </IconButton>
                 </CardActions>
@@ -338,62 +329,42 @@ const Inventory = () => {
       </InfoButton>
 
       {/* Create Item Modal */}
-      <Modal isOpen={isCreateModalOpen} onClose={() => {
-        setIsCreateModalOpen(false);
-        setEditingItem(null);
-        setNewItem({ name: '', quantity: '', unit: 'pieces', expiryDate: '' });
-      }}>
-        <Modal.Header>
-          {editingItem ? 'Edit Inventory Item' : 'Add Inventory Item'}
-        </Modal.Header>
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setEditingItem(null);
+          setNewItem({ name: "", quantity: "", unit: "pieces", expiryDate: "" });
+        }}
+      >
+        <Modal.Header>{editingItem ? "Edit Inventory Item" : "Add Inventory Item"}</Modal.Header>
         <Modal.Content>
-          <Input
-            type="text"
-            placeholder="Item name"
-            value={newItem.name}
-            onChange={e => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-          />
+          <Input type="text" placeholder="Item name" value={newItem.name} onChange={(e) => setNewItem((prev) => ({ ...prev, name: e.target.value }))} />
           <QuantityContainer>
-            <NumberInput
-              type="number"
-              placeholder="Quantity"
-              value={newItem.quantity}
-              onChange={e => setNewItem(prev => ({ ...prev, quantity: e.target.value }))}
-            />
+            <NumberInput type="number" placeholder="Quantity" value={newItem.quantity} onChange={(e) => setNewItem((prev) => ({ ...prev, quantity: e.target.value }))} />
             <RadioGroup>
-              {['pieces', 'pack', 'carton', 'grams'].map(unit => (
+              {["pieces", "pack", "carton", "grams"].map((unit) => (
                 <RadioLabel key={unit}>
-                  <input
-                    type="radio"
-                    name="unit"
-                    value={unit}
-                    checked={newItem.unit === unit}
-                    onChange={e => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
-                  />
+                  <input type="radio" name="unit" value={unit} checked={newItem.unit === unit} onChange={(e) => setNewItem((prev) => ({ ...prev, unit: e.target.value }))} />
                   {unit}
                 </RadioLabel>
               ))}
             </RadioGroup>
           </QuantityContainer>
-          <Input
-            type="date"
-            value={newItem.expiryDate}
-            onChange={e => setNewItem(prev => ({ ...prev, expiryDate: e.target.value }))}
-          />
+          <Input type="date" value={newItem.expiryDate} onChange={(e) => setNewItem((prev) => ({ ...prev, expiryDate: e.target.value }))} />
         </Modal.Content>
         <Modal.Footer>
-          <Modal.Button onClick={() => {
-            setIsCreateModalOpen(false);
-            setEditingItem(null);
-            setNewItem({ name: '', quantity: '', unit: 'pieces', expiryDate: '' });
-          }}>
+          <Modal.Button
+            onClick={() => {
+              setIsCreateModalOpen(false);
+              setEditingItem(null);
+              setNewItem({ name: "", quantity: "", unit: "pieces", expiryDate: "" });
+            }}
+          >
             Cancel
           </Modal.Button>
-          <Modal.Button 
-            onClick={editingItem ? handleEditItem : handleCreateItem}
-            disabled={(isCreating || isUpdating) || !newItem.name || !newItem.quantity}
-          >
-            {isCreating || isUpdating ? 'Saving...' : editingItem ? 'Save' : 'Create'}
+          <Modal.Button onClick={editingItem ? handleEditItem : handleCreateItem} disabled={isCreating || isUpdating || !newItem.name || !newItem.quantity}>
+            {isCreating || isUpdating ? "Saving..." : editingItem ? "Save" : "Create"}
           </Modal.Button>
         </Modal.Footer>
       </Modal>
@@ -402,10 +373,7 @@ const Inventory = () => {
       <Modal isOpen={isInfoModalOpen} onClose={() => setIsInfoModalOpen(false)}>
         <Modal.Header>About Inventory Management</Modal.Header>
         <Modal.Content>
-          <p>
-            The Inventory Management system helps you keep track of your grocery items,
-            their quantities, and expiry dates. This feature is designed to:
-          </p>
+          <p>The Inventory Management system helps you keep track of your grocery items, their quantities, and expiry dates. This feature is designed to:</p>
           <ul>
             <li>Prevent food waste by tracking expiry dates</li>
             <li>Maintain optimal stock levels</li>
@@ -414,13 +382,11 @@ const Inventory = () => {
           </ul>
         </Modal.Content>
         <Modal.Footer>
-          <Modal.Button onClick={() => setIsInfoModalOpen(false)}>
-            Close
-          </Modal.Button>
+          <Modal.Button onClick={() => setIsInfoModalOpen(false)}>Close</Modal.Button>
         </Modal.Footer>
       </Modal>
     </Container>
   );
 };
 
-export default Inventory; 
+export default Inventory;

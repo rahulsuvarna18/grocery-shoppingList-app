@@ -5,6 +5,8 @@ import GroceryList from "./pages/GroceryList";
 import AppLayout from "./ui/AppLayout";
 import { useAuth } from "./context/AuthContext";
 import Inventory from "./pages/Inventory";
+import Dashboard from "./pages/Dashboard";
+// import Dashboard from "./pages/Dashboard";
 
 // Protected Route wrapper component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -13,11 +15,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
 
-  return (
-    <AppLayout>
-      {children}
-    </AppLayout>
-  );
+  return <AppLayout>{children}</AppLayout>;
 };
 
 export const router = createBrowserRouter([
@@ -53,4 +51,12 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-]); 
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+]);
