@@ -1,17 +1,54 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import supabase from "../../services/supabase";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LogOut, ShoppingCart, Menu, X, Boxes, UserIcon } from "lucide-react";
+import { getUserMetadata } from "../../services/apiUserMetadata";
+import { Database } from "../../types/Supabase";
 import { Avatar, HeaderContainer, HeaderContent, IconButton, LogoContainer, MenuBackdrop, MenuButton, MenuDropdown, MenuLink, MenuLogoutButton, MenuUserInfo, UserImage, UserInfo, UserName, UserSection } from "./Header.styles";
 import NavLinks from "./NavLinks";
 // import UserSection from "./UserSection";
+
+type UserMetadata = Database["public"]["Tables"]["user_metadata"]["Row"];
 
 const Header = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userMetadata, setUserMetadata] = useState<UserMetadata | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserMetadata = async () => {
+      if (user) {
+        try {
+          setIsLoading(true);
+          const metadata = await getUserMetadata();
+          setUserMetadata(metadata);
+          setImageError(false);
+        } catch (error) {
+          console.error("Error fetching user metadata:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Initial fetch
+    fetchUserMetadata();
+
+    // Listen for metadata updates
+    const handleMetadataUpdate = () => {
+      fetchUserMetadata();
+    };
+
+    window.addEventListener("userMetadataUpdated", handleMetadataUpdate);
+
+    return () => {
+      window.removeEventListener("userMetadataUpdated", handleMetadataUpdate);
+    };
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -19,20 +56,11 @@ const Header = () => {
   };
 
   const getUserAvatar = () => {
-    if (!user) return null;
+    if (isLoading) return "...";
+    if (!user || !userMetadata) return null;
 
-    // Prioritize custom avatar over Google avatar
-    let avatarUrl = user.user_metadata?.avatar_url;
-
-    // Fall back to Google picture if no custom avatar
-    if (!avatarUrl) {
-      avatarUrl = user.user_metadata?.picture || user.user_metadata?.user_picture;
-      if (avatarUrl && avatarUrl.includes("googleusercontent.com")) {
-        avatarUrl = avatarUrl.replace("=s96-c", "=s400-c");
-      }
-    }
-
-    const fullName = user.user_metadata?.full_name || user.email || "";
+    const avatarUrl = userMetadata.avatar_url;
+    const fullName = userMetadata.full_name || user.email || "";
     const initial = fullName.charAt(0).toUpperCase();
 
     if (avatarUrl && !imageError) {
@@ -40,13 +68,14 @@ const Header = () => {
         <UserImage
           src={avatarUrl}
           alt={fullName}
-          referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
-          onError={(e) => {
-            console.error("Error loading avatar image:", e);
+          onError={() => {
+            console.error("Error loading avatar image");
             setImageError(true);
           }}
           onLoad={() => setImageError(false)}
+          style={{ objectFit: "cover" }}
+          loading="eager"
+          crossOrigin="anonymous"
         />
       );
     }
@@ -54,7 +83,7 @@ const Header = () => {
     return initial;
   };
 
-  const hasValidImage = Boolean(!imageError && (user?.user_metadata?.avatar_url || user?.user_metadata?.picture || user?.user_metadata?.user_picture));
+  const hasValidImage = Boolean(!imageError && userMetadata?.avatar_url);
 
   const handleUserSectionClick = () => {
     navigate("/dashboard");
@@ -73,7 +102,7 @@ const Header = () => {
         {/* Desktop view */}
         <UserSection onClick={handleUserSectionClick} style={{ cursor: "pointer" }}>
           <Avatar $hasImage={hasValidImage}>{getUserAvatar()}</Avatar>
-          <UserName>{user?.user_metadata?.full_name || user?.email}</UserName>
+          <UserName>{isLoading ? "Loading..." : userMetadata?.full_name || user?.email}</UserName>
           <IconButton onClick={handleLogout} aria-label="Logout">
             <LogOut size={20} />
           </IconButton>
@@ -85,7 +114,7 @@ const Header = () => {
         <MenuDropdown $isOpen={isMenuOpen}>
           <MenuUserInfo>
             <Avatar $hasImage={hasValidImage}>{getUserAvatar()}</Avatar>
-            <UserName>{user?.user_metadata?.full_name || user?.email}</UserName>
+            <UserName>{isLoading ? "Loading..." : userMetadata?.full_name || user?.email}</UserName>
           </MenuUserInfo>
 
           <MenuLink as="button" onClick={() => navigate("/dashboard")}>

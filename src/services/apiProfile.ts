@@ -1,24 +1,30 @@
 import supabase from "./supabase";
+import { Database } from "../types/Supabase";
 
-export const updateUserProfile = async (updates: { fullName?: string; email?: string; avatarUrl?: string }) => {
+type UserMetadata = Database["public"]["Tables"]["user_metadata"]["Row"];
+
+export const updateUserMetadata = async (updates: { full_name?: string | null; avatar_url?: string | null }) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
 
-  // Prepare the metadata update
-  const metadata = {
-    ...user.user_metadata,
-    full_name: updates.fullName || user.user_metadata?.full_name,
-    avatar_url: updates.avatarUrl || user.user_metadata?.avatar_url,
-  };
+  const { data, error } = await supabase
+    .from("user_metadata")
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user.id)
+    .select()
+    .single();
 
-  const { data, error } = await supabase.auth.updateUser({
-    data: metadata,
-  });
+  if (error) {
+    console.error("Error updating user metadata:", error);
+    throw error;
+  }
 
-  if (error) throw error;
-  return data;
+  return data as UserMetadata;
 };
 
 export const uploadAvatar = async (file: File) => {
@@ -33,7 +39,7 @@ export const uploadAvatar = async (file: File) => {
     const filePath = `${user.id}/${fileName}`;
 
     // Upload file to avatars bucket
-    const { error: uploadError, data } = await supabase.storage.from("avatars").upload(filePath, file, {
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, {
       upsert: true,
       contentType: file.type,
     });
