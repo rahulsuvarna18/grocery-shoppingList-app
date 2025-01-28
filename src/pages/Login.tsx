@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import supabase from "../services/supabase";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../ui/LoadingSpinner";
+import AuthForm from "../components/Auth/AuthForm";
 
 const LoginContainer = styled.div`
   display: flex;
@@ -93,9 +94,27 @@ const GoogleIcon = styled.img`
   height: 24px;
 `;
 
+const OrDivider = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: #666;
+  font-size: 14px;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+  }
+`;
+
 const Login = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [authMode, setAuthMode] = useState<"google" | "email">("google");
 
   useEffect(() => {
     if (user) {
@@ -126,10 +145,23 @@ const Login = () => {
         <Logo>🛒</Logo>
         <Title>Welcome to Grocery App</Title>
         <Subtitle>Simplify your shopping experience with smart grocery lists and easy collaboration.</Subtitle>
-        <GoogleButton onClick={handleGoogleLogin}>
-          <GoogleIcon src="/google-icon.svg" alt="Google" />
-          Continue with Google
-        </GoogleButton>
+
+        {authMode === "google" ? (
+          <>
+            <GoogleButton onClick={handleGoogleLogin}>
+              <GoogleIcon src="/google-icon.svg" alt="Google" />
+              Continue with Google
+            </GoogleButton>
+            <OrDivider>or</OrDivider>
+            <GoogleButton onClick={() => setAuthMode("email")}>Continue with Email</GoogleButton>
+          </>
+        ) : (
+          <>
+            <AuthForm />
+            <OrDivider>or</OrDivider>
+            <GoogleButton onClick={() => setAuthMode("google")}>Back to Google Login</GoogleButton>
+          </>
+        )}
       </LoginCard>
     </LoginContainer>
   );

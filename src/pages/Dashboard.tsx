@@ -1,77 +1,50 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Pencil } from "lucide-react";
-import { uploadAvatar, updateUserMetadata } from "../services/apiProfile";
+import { uploadAvatar } from "../services/apiProfile";
 import { AvatarImage, AvatarPlaceholder, AvatarSection, AvatarUpload, AvatarWrapper, Container, ProfileCard } from "../components/Dashboard/Dashboard.styles";
 import ProfileForm from "../components/Dashboard/ProfileForm";
-import { getUserMetadata } from "../services/apiUserMetadata";
-import { Database } from "../types/Supabase";
 
-type UserMetadata = Database["public"]["Tables"]["user_metadata"]["Row"];
+import { useUserMetadata } from "../hooks/useUserMetadata";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  //   const { updateProfile, isUpdating } = useUpdateProfile();
-  const [userMetadata, setUserMetadata] = useState<UserMetadata | null>(null);
+  const { userMetadata, updateMetadata, isUpdating } = useUserMetadata();
   const [formData, setFormData] = useState({
     fullName: "",
     email: user?.email || "",
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    const fetchUserMetadata = async () => {
-      if (user) {
-        try {
-          const metadata = await getUserMetadata();
-          setUserMetadata(metadata);
-          setFormData((prev) => ({
-            ...prev,
-            fullName: metadata.full_name || "",
-          }));
-          setImagePreview(metadata.avatar_url);
-        } catch (error) {
-          console.error("Error fetching user metadata:", error);
-        }
-      }
-    };
-
-    fetchUserMetadata();
-  }, [user]);
+    if (userMetadata) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: userMetadata.full_name || "",
+      }));
+      setImagePreview(userMetadata.avatar_url);
+    }
+  }, [userMetadata]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setIsUpdating(true);
       let avatarUrl = userMetadata?.avatar_url;
 
       if (selectedFile) {
         avatarUrl = await uploadAvatar(selectedFile);
       }
 
-      // Update user_metadata table
-      await updateUserMetadata({
+      await updateMetadata({
         full_name: formData.fullName,
         avatar_url: avatarUrl,
       });
 
-      // Reset file selection
       setSelectedFile(null);
-
-      // Refresh metadata
-      const updatedMetadata = await getUserMetadata();
-      setUserMetadata(updatedMetadata);
-      setImagePreview(updatedMetadata.avatar_url);
-
-      // Force header to refresh by triggering a custom event
-      window.dispatchEvent(new CustomEvent("userMetadataUpdated"));
     } catch (error) {
       console.error("Error updating profile:", error);
       setImagePreview(userMetadata?.avatar_url || null);
-    } finally {
-      setIsUpdating(false);
     }
   };
 

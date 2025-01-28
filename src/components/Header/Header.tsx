@@ -1,54 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import supabase from "../../services/supabase";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { LogOut, ShoppingCart, Menu, X, Boxes, UserIcon } from "lucide-react";
-import { getUserMetadata } from "../../services/apiUserMetadata";
-import { Database } from "../../types/Supabase";
-import { Avatar, HeaderContainer, HeaderContent, IconButton, LogoContainer, MenuBackdrop, MenuButton, MenuDropdown, MenuLink, MenuLogoutButton, MenuUserInfo, UserImage, UserInfo, UserName, UserSection } from "./Header.styles";
+import { Avatar, HeaderContainer, HeaderContent, IconButton, LogoContainer, MenuBackdrop, MenuButton, MenuDropdown, MenuLink, MenuLogoutButton, MenuUserInfo, UserImage, UserName, UserSection } from "./Header.styles";
 import NavLinks from "./NavLinks";
+import { useUserMetadata } from "../../hooks/useUserMetadata";
 // import UserSection from "./UserSection";
-
-type UserMetadata = Database["public"]["Tables"]["user_metadata"]["Row"];
 
 const Header = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [userMetadata, setUserMetadata] = useState<UserMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserMetadata = async () => {
-      if (user) {
-        try {
-          setIsLoading(true);
-          const metadata = await getUserMetadata();
-          setUserMetadata(metadata);
-          setImageError(false);
-        } catch (error) {
-          console.error("Error fetching user metadata:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Initial fetch
-    fetchUserMetadata();
-
-    // Listen for metadata updates
-    const handleMetadataUpdate = () => {
-      fetchUserMetadata();
-    };
-
-    window.addEventListener("userMetadataUpdated", handleMetadataUpdate);
-
-    return () => {
-      window.removeEventListener("userMetadataUpdated", handleMetadataUpdate);
-    };
-  }, [user]);
+  const { userMetadata, isLoading } = useUserMetadata();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -64,20 +29,7 @@ const Header = () => {
     const initial = fullName.charAt(0).toUpperCase();
 
     if (avatarUrl && !imageError) {
-      return (
-        <UserImage
-          src={avatarUrl}
-          alt={fullName}
-          onError={() => {
-            console.error("Error loading avatar image");
-            setImageError(true);
-          }}
-          onLoad={() => setImageError(false)}
-          style={{ objectFit: "cover" }}
-          loading="eager"
-          crossOrigin="anonymous"
-        />
-      );
+      return <UserImage src={avatarUrl} alt={fullName} onError={() => setImageError(true)} onLoad={() => setImageError(false)} style={{ objectFit: "cover" }} loading="eager" crossOrigin="anonymous" />;
     }
 
     return initial;
