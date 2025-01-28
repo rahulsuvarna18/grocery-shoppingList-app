@@ -7,25 +7,21 @@ import LoadingSpinner from "../ui/LoadingSpinner";
 import AuthForm from "../components/Auth/AuthForm";
 
 const LoginContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4caf50 0%, #a5d6a7 100%);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 0;
-  overflow: hidden;
+  padding: 1rem;
 `;
 
 const LoginCard = styled.div`
   background: white;
-  padding: 3rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  max-width: 400px;
-  width: calc(100% - 40px);
-  margin: 20px;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 28rem;
   animation: fadeIn 0.5s ease-out;
 
   @keyframes fadeIn {
@@ -41,46 +37,46 @@ const LoginCard = styled.div`
 `;
 
 const Logo = styled.div`
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #4caf50;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #9333ea;
+  margin-bottom: 0.5rem;
+  text-align: center;
 `;
 
 const Title = styled.h1`
-  color: #333;
-  margin-bottom: 2rem;
-  font-size: 1.5rem;
-  font-weight: 500;
+  color: #111827;
+  font-size: 1.875rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.5rem;
 `;
 
 const Subtitle = styled.p`
-  color: #666;
-  margin-bottom: 2.5rem;
-  font-size: 1rem;
-  line-height: 1.5;
+  color: #4b5563;
+  text-align: center;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
 `;
 
 const GoogleButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 14px 32px;
-  background-color: white;
-  border: 2px solid #eee;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
+  gap: 0.5rem;
   width: 100%;
-  transition: all 0.3s ease;
+  padding: 0.75rem 1rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: #f8f8f8;
+    background-color: #f9fafb;
     border-color: #4caf50;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
   }
 
@@ -90,24 +86,32 @@ const GoogleButton = styled.button`
 `;
 
 const GoogleIcon = styled.img`
-  width: 24px;
-  height: 24px;
+  width: 1.25rem;
+  height: 1.25rem;
 `;
 
 const OrDivider = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 24px 0;
-  color: #666;
-  font-size: 14px;
+  position: relative;
+  margin: 1.5rem 0;
+  text-align: center;
 
-  &::before,
-  &::after {
+  &::before {
     content: "";
-    flex: 1;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
     height: 1px;
-    background: #ddd;
+    background: #e5e7eb;
+  }
+
+  span {
+    position: relative;
+    background: white;
+    padding: 0 0.75rem;
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
   }
 `;
 
@@ -143,8 +147,8 @@ const Login = () => {
     <LoginContainer>
       <LoginCard>
         <Logo>🛒</Logo>
-        <Title>Welcome to Grocery App</Title>
-        <Subtitle>Simplify your shopping experience with smart grocery lists and easy collaboration.</Subtitle>
+        <Title>Welcome Back</Title>
+        <Subtitle>Sign in to your account to continue</Subtitle>
 
         {authMode === "google" ? (
           <>
@@ -152,13 +156,17 @@ const Login = () => {
               <GoogleIcon src="/google-icon.svg" alt="Google" />
               Continue with Google
             </GoogleButton>
-            <OrDivider>or</OrDivider>
+            <OrDivider>
+              <span>or continue with</span>
+            </OrDivider>
             <GoogleButton onClick={() => setAuthMode("email")}>Continue with Email</GoogleButton>
           </>
         ) : (
           <>
             <AuthForm />
-            <OrDivider>or</OrDivider>
+            <OrDivider>
+              <span>or</span>
+            </OrDivider>
             <GoogleButton onClick={() => setAuthMode("google")}>Back to Google Login</GoogleButton>
           </>
         )}
