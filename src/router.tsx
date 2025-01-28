@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import HomePage from "./pages/Home";
 import Login from "./pages/Login";
+import Landing from "./pages/Landing";
 import GroceryList from "./pages/GroceryList";
 import AppLayout from "./ui/AppLayout";
 import { useAuth } from "./context/AuthContext";
@@ -18,14 +19,31 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <AppLayout>{children}</AppLayout>;
 };
 
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (user) return <Navigate to="/home" replace />;
+
+  return <>{children}</>;
+};
+
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/home" replace />,
+    element: (
+      <PublicRoute>
+        <Landing />
+      </PublicRoute>
+    ),
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <PublicRoute>
+        <Login />
+      </PublicRoute>
+    ),
   },
   {
     path: "/home",
