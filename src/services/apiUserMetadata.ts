@@ -4,14 +4,18 @@ import { Database } from "../types/Supabase";
 type UserMetadata = Database["public"]["Tables"]["user_metadata"]["Row"];
 
 export const createInitialUserMetadata = async (user: any) => {
+  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  const transformedAvatarUrl = avatarUrl ? `${avatarUrl}?width=200&height=200&resize=cover` : null;
+
   const { data, error } = await supabase
     .from("user_metadata")
     .insert({
       user_id: user.id,
       full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-      avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+      avatar_url: transformedAvatarUrl,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      auth_provider: user.app_metadata?.provider || "email",
     })
     .select()
     .single();
@@ -21,7 +25,7 @@ export const createInitialUserMetadata = async (user: any) => {
     throw error;
   }
 
-  return data as UserMetadata;
+  return data;
 };
 
 export const getUserMetadata = async () => {
