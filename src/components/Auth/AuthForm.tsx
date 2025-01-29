@@ -1,7 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
 import supabase from "../../services/supabase";
-import { useAuth } from "../../context/AuthContext";
 
 const Form = styled.form`
   display: flex;

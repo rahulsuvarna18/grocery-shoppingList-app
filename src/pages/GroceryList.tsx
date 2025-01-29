@@ -1,13 +1,13 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
-import { getGroceryLists } from '../services/apiGroceryList';
-import Input from '../ui/Input';
-import GroceryItemCards from '../ui/GroceryItemCards';
-import RecentlyDeleted from '../components/RecentlyDeleted';
-import LoadingSpinner from '../ui/LoadingSpinner';
-import Error from '../ui/Error';
-import { ArrowLeft } from 'lucide-react';
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import styled from "styled-components";
+import { getGroceryLists } from "../services/apiGroceryList";
+import Input from "../ui/Input";
+import GroceryItemCards from "../ui/GroceryItemCards";
+import RecentlyDeleted from "../components/RecentlyDeleted";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import Error from "../ui/Error";
+import { ArrowLeft } from "lucide-react";
 
 const Wrapper = styled.div`
   display: flex;
@@ -41,7 +41,7 @@ const BackButton = styled.button`
   gap: 8px;
   padding: 10px 16px;
   background-color: white;
-  color: #43A047;
+  color: #43a047;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   font-size: 14px;
@@ -71,9 +71,13 @@ const ItemsWrapper = styled.div`
 const GroceryList = () => {
   const { listName } = useParams();
   const navigate = useNavigate();
-  
-  const { data: groceryLists, isPending, error } = useQuery({
-    queryKey: ['groceryLists'],
+
+  const {
+    data: groceryLists,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ["groceryLists"],
     queryFn: getGroceryLists,
   });
 
@@ -83,28 +87,26 @@ const GroceryList = () => {
   // Convert URL format back to potential list name format
   const urlToListName = (urlName: string) => {
     return urlName
-      .split('-')
-      .map(word => word.trim())
-      .join(' ');
+      .split("-")
+      .map((word) => word.trim())
+      .join(" ");
   };
 
-  const decodedListName = urlToListName(listName || '');
+  const decodedListName = urlToListName(listName || "");
 
-  const selectedList = groceryLists?.find(
-    list => list.grocery_list_name.toLowerCase() === decodedListName.toLowerCase()
-  );
+  const selectedList = groceryLists?.find((list) => list.grocery_list_name.toLowerCase() === decodedListName.toLowerCase());
 
   if (!selectedList) {
     return <Error message="List not found" />;
   }
 
-  const groceryItems = selectedList.grocery_items.split(',') || [];
-  const recentlyDeletedGroceryItems = selectedList.recently_used.split(',') || [];
+  const groceryItems = selectedList.grocery_list_items.split(",") || [];
+  const recentlyDeletedGroceryItems = selectedList.recently_used.split(",") || [];
 
   return (
     <Wrapper>
       <TopBar>
-        <BackButton onClick={() => navigate('/home')}>
+        <BackButton onClick={() => navigate("/home")}>
           <ArrowLeft size={18} />
           Back to Lists
         </BackButton>
@@ -112,20 +114,14 @@ const GroceryList = () => {
       <ContentContainer>
         <Input selectedListId={selectedList.id} />
         <ItemsWrapper>
-          <GroceryItemCards 
-            id={selectedList.id} 
-            groceryLists={groceryItems} 
-          />
+          <GroceryItemCards id={selectedList.id} groceryLists={groceryItems} />
         </ItemsWrapper>
         <ItemsWrapper>
-          <RecentlyDeleted 
-            id={selectedList.id} 
-            recentlyDeletedItems={recentlyDeletedGroceryItems} 
-          />
+          <RecentlyDeleted id={selectedList.id} recentlyDeletedItems={recentlyDeletedGroceryItems} />
         </ItemsWrapper>
       </ContentContainer>
     </Wrapper>
   );
 };
 
-export default GroceryList; 
+export default GroceryList;

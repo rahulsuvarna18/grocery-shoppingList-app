@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import useDeleteGroceryList from "../services/Mutations/useDeleteGroceryList";
-import Modal from './Modal/Modal';
+import Modal from "./Modal/Modal";
 import { Trash2, Pencil } from "lucide-react";
 import useUpdateGroceryList from "../services/Mutations/useUpdateGroceryList";
 
@@ -17,7 +17,7 @@ const Wrapper = styled.div`
 const Card = styled.div<{ $bgColor: string }>`
   padding: 28px;
   border-radius: 12px;
-  background-color: ${props => props.$bgColor};
+  background-color: ${(props) => props.$bgColor};
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -67,7 +67,7 @@ const ButtonGroup = styled.div`
   gap: 8px;
 `;
 
-const IconButton = styled.button<{ $variant?: 'delete' }>`
+const IconButton = styled.button<{ $variant?: "delete" }>`
   background: none;
   border: none;
   color: #666;
@@ -80,8 +80,8 @@ const IconButton = styled.button<{ $variant?: 'delete' }>`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.$variant === 'delete' ? '#fee2e2' : '#e0e7ff'};
-    color: ${props => props.$variant === 'delete' ? '#ef4444' : '#4f46e5'};
+    background-color: ${(props) => (props.$variant === "delete" ? "#fee2e2" : "#e0e7ff")};
+    color: ${(props) => (props.$variant === "delete" ? "#ef4444" : "#4f46e5")};
   }
 `;
 
@@ -111,8 +111,8 @@ const ColorOption = styled.button<{ $bgColor: string; $isSelected: boolean }>`
   width: 100%;
   aspect-ratio: 1;
   border-radius: 8px;
-  border: 2px solid ${props => props.$isSelected ? '#4caf50' : '#e0e0e0'};
-  background-color: ${props => props.$bgColor};
+  border: 2px solid ${(props) => (props.$isSelected ? "#4caf50" : "#e0e0e0")};
+  background-color: ${(props) => props.$bgColor};
   cursor: pointer;
   transition: transform 0.2s ease;
 
@@ -121,18 +121,13 @@ const ColorOption = styled.button<{ $bgColor: string; $isSelected: boolean }>`
   }
 `;
 
-const COLORS = [
-  '#FFFFFF',
-  '#FF9B9B', '#FFB4B4', '#FFDEB4', '#FFE4C0', '#FFF3E2',
-  '#B4E4FF', '#95BDFF', '#DFFFD8', '#B4F8C8', '#A0E4CB',
-  '#FFABE1', '#C0DEFF', '#E3DFFD', '#FFF4D2', '#FFCEFE',
-];
+const COLORS = ["#FFFFFF", "#FF9B9B", "#FFB4B4", "#FFDEB4", "#FFE4C0", "#FFF3E2", "#B4E4FF", "#95BDFF", "#DFFFD8", "#B4F8C8", "#A0E4CB", "#FFABE1", "#C0DEFF", "#E3DFFD", "#FFF4D2", "#FFCEFE"];
 
 interface GroceryListCardProps {
-  groceryLists: { 
-    id: number; 
+  groceryLists: {
+    id: number;
     grocery_list_name: string;
-    grocery_items: string;
+    grocery_list_items: string;
     color: string;
   }[];
 }
@@ -165,17 +160,17 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
     e.stopPropagation();
     setSelectedList(list);
     setEditName(list.name);
-    setSelectedColor(list.color || '#FFFFFF');
+    setSelectedColor(list.color || "#FFFFFF");
     setEditModalOpen(true);
   };
 
   const handleUpdate = () => {
     if (selectedList && editName.trim()) {
       updateList(
-        { 
-          id: selectedList.id, 
+        {
+          id: selectedList.id,
           name: editName.trim(),
-          color: selectedColor || '#FFFFFF'
+          color: selectedColor || "#FFFFFF",
         },
         {
           onSuccess: () => {
@@ -183,47 +178,41 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
             setSelectedList(null);
             setEditName("");
             setSelectedColor("");
-          }
+          },
         }
       );
     }
   };
 
   const getItemCount = (items: string) => {
-    const count = items.split(',').filter(item => item.trim()).length;
-    return `${count} ${count === 1 ? 'item' : 'items'}`;
+    const itemList = items ? items.split(",").filter((item) => item.trim()) : [];
+    return `${itemList.length} ${itemList.length === 1 ? "item" : "items"}`;
   };
 
   return (
     <>
       <Wrapper>
         {groceryLists.map((groceryList) => (
-          <Card
-            key={groceryList.id}
-            onClick={() => navigate(`/list/${groceryList.grocery_list_name.toLowerCase().replace(/ /g, '-')}`)}
-            $bgColor={groceryList.color || '#ffffff'}
-          >
+          <Card key={groceryList.id} onClick={() => navigate(`/list/${groceryList.grocery_list_name.toLowerCase().replace(/ /g, "-")}`)} $bgColor={groceryList.color || "#ffffff"}>
             <div>
               <ListTitle>{groceryList.grocery_list_name}</ListTitle>
               <ListInfo>Created on {new Date().toLocaleDateString()}</ListInfo>
-              <ItemCount>{getItemCount(groceryList.grocery_items)}</ItemCount>
+              <ItemCount>{getItemCount(groceryList.grocery_list_items)}</ItemCount>
             </div>
             <ButtonGroup>
               <IconButton
-                onClick={(e) => handleEdit(e, { 
-                  id: groceryList.id, 
-                  name: groceryList.grocery_list_name,
-                  color: groceryList.color 
-                })}
+                onClick={(e) =>
+                  handleEdit(e, {
+                    id: groceryList.id,
+                    name: groceryList.grocery_list_name,
+                    color: groceryList.color,
+                  })
+                }
                 disabled={isUpdating}
               >
                 <Pencil size={18} />
               </IconButton>
-              <IconButton
-                $variant="delete"
-                onClick={(e) => handleDelete(e, groceryList.id)}
-                disabled={isDeleting}
-              >
+              <IconButton $variant="delete" onClick={(e) => handleDelete(e, groceryList.id)} disabled={isDeleting}>
                 <Trash2 size={18} />
               </IconButton>
             </ButtonGroup>
@@ -233,13 +222,9 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
         <Modal.Header>Delete List</Modal.Header>
-        <Modal.Content>
-          Are you sure you want to delete this list? This action cannot be undone.
-        </Modal.Content>
+        <Modal.Content>Are you sure you want to delete this list? This action cannot be undone.</Modal.Content>
         <Modal.Footer>
-          <Modal.Button onClick={() => setModalOpen(false)}>
-            Cancel
-          </Modal.Button>
+          <Modal.Button onClick={() => setModalOpen(false)}>Cancel</Modal.Button>
           <Modal.Button variant="danger" onClick={confirmDelete}>
             Delete
           </Modal.Button>
@@ -249,38 +234,17 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
         <Modal.Header>Edit List</Modal.Header>
         <Modal.Content>
-          <Input
-            autoFocus
-            type="text"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            placeholder="Enter new list name..."
-            disabled={isUpdating}
-          />
+          <Input autoFocus type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Enter new list name..." disabled={isUpdating} />
           <ColorGrid>
             {COLORS.map((color) => (
-              <ColorOption
-                key={color}
-                $bgColor={color}
-                $isSelected={selectedColor === color}
-                onClick={() => setSelectedColor(color)}
-              />
+              <ColorOption key={color} $bgColor={color} $isSelected={selectedColor === color} onClick={() => setSelectedColor(color)} />
             ))}
           </ColorGrid>
         </Modal.Content>
         <Modal.Footer>
-          <Modal.Button onClick={() => setEditModalOpen(false)}>
-            Cancel
-          </Modal.Button>
-          <Modal.Button 
-            onClick={handleUpdate}
-            disabled={
-              isUpdating || 
-              !editName.trim() || 
-              (editName === selectedList?.name && selectedColor === selectedList?.color)
-            }
-          >
-            {isUpdating ? 'Updating...' : 'Update'}
+          <Modal.Button onClick={() => setEditModalOpen(false)}>Cancel</Modal.Button>
+          <Modal.Button onClick={handleUpdate} disabled={isUpdating || !editName.trim() || (editName === selectedList?.name && selectedColor === selectedList?.color)}>
+            {isUpdating ? "Updating..." : "Update"}
           </Modal.Button>
         </Modal.Footer>
       </Modal>
