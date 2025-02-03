@@ -10,21 +10,6 @@
 
 ![App Demo](demo.gif)
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ## 🎯 Overview
 
@@ -178,14 +163,6 @@ We welcome contributions! Please follow these steps:
 - Add appropriate documentation
 - Include tests for new features
 
-## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Contact
 
-Project Link: [https://github.com/yourusername/smart-grocery-manager](https://github.com/yourusername/smart-grocery-manager)
-
----
-
-Made with ❤️ by [Your Name]
