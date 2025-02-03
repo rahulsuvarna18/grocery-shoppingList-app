@@ -289,7 +289,7 @@ const Inventory = () => {
                 <CardActions>
                   <IconButton
                     onClick={() => {
-                      setEditingItem(item);
+                      setEditingItem(item as InventoryItem);
                       setNewItem({
                         name: item.name,
                         quantity: String(item.quantity),

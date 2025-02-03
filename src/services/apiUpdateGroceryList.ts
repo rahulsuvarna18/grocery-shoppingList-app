@@ -13,11 +13,6 @@ interface GroceryList {
   recently_used: string;
 }
 
-interface CreateGroceryListProps {
-  name: string;
-  color: string;
-}
-
 export const updateGroceryItems = async ({ id, newItem }: UpdateGroceryItemsProps): Promise<GroceryList[]> => {
   // Fetch the current value of the grocery_list_items column
   const { data: allExistingData, error: fetchError } = await supabase.from("grocery_lists").select("grocery_list_items").eq("id", id).single();
@@ -106,45 +101,25 @@ export const deleteRecentlyDeletedItem = async ({ id, itemToRemove }: { id: numb
   }
 };
 
-export const createGroceryList = async ({ name, color }: CreateGroceryListProps): Promise<GroceryList[]> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("User not authenticated");
-
-  const { data: existingLists } = await supabase.from("grocery_lists").select("grocery_list_name").eq("user_id", user.id).ilike("grocery_list_name", name);
-
-  if (existingLists && existingLists.length > 0) {
-    throw new Error("A list with this name already exists. Please choose a different name.");
-  }
-
-  const { data, error } = await supabase
-    .from("grocery_lists")
-    .insert([
-      {
-        grocery_list_name: name,
-        grocery_list_items: "",
-        recently_used: "",
-        user_id: user.id,
-        color: color,
-      },
-    ])
-    .select();
-
-  if (error) {
-    console.error("Error creating grocery list:", error.message);
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
 export const deleteGroceryList = async (id: number): Promise<void> => {
-  const { error } = await supabase.from("grocery_lists").delete().eq("id", id);
+  try {
+    // First, delete all related items from user_grocery_items
+    const { error: itemsError } = await supabase.from("user_grocery_items").delete().eq("grocery_list_id", id);
 
-  if (error) {
-    console.error("Error deleting grocery list:", error.message);
-    throw new Error(error.message);
+    if (itemsError) {
+      console.error("Error deleting related grocery items:", itemsError.message);
+      throw new Error(itemsError.message);
+    }
+
+    // Then delete the grocery list
+    const { error: listError } = await supabase.from("grocery_lists").delete().eq("id", id);
+
+    if (listError) {
+      console.error("Error deleting grocery list:", listError.message);
+      throw new Error(listError.message);
+    }
+  } catch (error) {
+    console.error("Error in delete operation:", error);
+    throw error;
   }
 };

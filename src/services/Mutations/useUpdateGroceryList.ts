@@ -9,22 +9,29 @@ interface UpdateGroceryListParams {
 
 const updateGroceryList = async ({ id, name, color }: UpdateGroceryListParams) => {
   const { data, error } = await supabase
-    .from("Grocery List")
-    .update({ 
+    .from("grocery_lists")
+    .update({
       grocery_list_name: name,
-      color: color || '#FFFFFF'
+      color: color || "#FFFFFF",
     })
     .eq("id", id)
     .select();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error updating grocery list:", error.message);
+    throw new Error(error.message);
+  }
   return data;
 };
 
 const useUpdateGroceryList = () => {
   const queryClient = useQueryClient();
 
-  const { mutate: updateList, isPending: isUpdating, error } = useMutation({
+  const {
+    mutate: updateList,
+    isPending: isUpdating,
+    error,
+  } = useMutation({
     mutationFn: updateGroceryList,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groceryLists"] });
@@ -34,4 +41,4 @@ const useUpdateGroceryList = () => {
   return { updateList, isUpdating, error };
 };
 
-export default useUpdateGroceryList; 
+export default useUpdateGroceryList;

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createGroceryList as createList } from "../apiUpdateGroceryList";
+import { createGroceryList as createList } from "../apiGroceryList";
 
 interface CreateGroceryListParams {
   name: string;
@@ -9,7 +9,11 @@ interface CreateGroceryListParams {
 const useCreateGroceryList = () => {
   const queryClient = useQueryClient();
 
-  const { mutate: createGroceryList, isPending: isCreating, error } = useMutation({
+  const {
+    mutate: createGroceryList,
+    isPending: isCreating,
+    error,
+  } = useMutation({
     mutationFn: (params: CreateGroceryListParams) => createList(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groceryLists"] });
@@ -19,4 +23,4 @@ const useCreateGroceryList = () => {
   return { createGroceryList, isCreating, error };
 };
 
-export default useCreateGroceryList; 
+export default useCreateGroceryList;

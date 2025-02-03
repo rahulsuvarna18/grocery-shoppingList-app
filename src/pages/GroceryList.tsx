@@ -1,10 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
-import { getGroceryLists } from "../services/apiGroceryList";
+import { getGroceryLists, getGroceryListItems } from "../services/apiGroceryList";
 import Input from "../ui/Input";
 import GroceryItemCards from "../ui/GroceryItemCards";
-import RecentlyDeleted from "../components/RecentlyDeleted";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import { ArrowLeft } from "lucide-react";
@@ -72,17 +71,15 @@ const GroceryList = () => {
   const { listName } = useParams();
   const navigate = useNavigate();
 
+  // Query to get all grocery lists
   const {
     data: groceryLists,
-    isPending,
-    error,
+    isPending: isListsPending,
+    error: listsError,
   } = useQuery({
     queryKey: ["groceryLists"],
     queryFn: getGroceryLists,
   });
-
-  if (isPending) return <LoadingSpinner />;
-  if (error) return <Error message={error.message} />;
 
   // Convert URL format back to potential list name format
   const urlToListName = (urlName: string) => {
@@ -93,15 +90,26 @@ const GroceryList = () => {
   };
 
   const decodedListName = urlToListName(listName || "");
-
   const selectedList = groceryLists?.find((list) => list.grocery_list_name.toLowerCase() === decodedListName.toLowerCase());
+
+  // Query to get items for the selected list
+  const {
+    data: groceryItems,
+    isPending: isItemsPending,
+    error: itemsError,
+  } = useQuery({
+    queryKey: ["groceryListItems", selectedList?.id],
+    queryFn: () => (selectedList ? getGroceryListItems(selectedList.id) : Promise.resolve([])),
+    enabled: !!selectedList,
+  });
+
+  if (isListsPending || isItemsPending) return <LoadingSpinner />;
+  if (listsError) return <Error message={listsError.message} />;
+  if (itemsError) return <Error message={itemsError.message} />;
 
   if (!selectedList) {
     return <Error message="List not found" />;
   }
-
-  const groceryItems = selectedList.grocery_list_items.split(",") || [];
-  const recentlyDeletedGroceryItems = selectedList.recently_used.split(",") || [];
 
   return (
     <Wrapper>
@@ -114,10 +122,7 @@ const GroceryList = () => {
       <ContentContainer>
         <Input selectedListId={selectedList.id} />
         <ItemsWrapper>
-          <GroceryItemCards id={selectedList.id} groceryLists={groceryItems} />
-        </ItemsWrapper>
-        <ItemsWrapper>
-          <RecentlyDeleted id={selectedList.id} recentlyDeletedItems={recentlyDeletedGroceryItems} />
+          <GroceryItemCards id={selectedList.id} groceryItems={groceryItems || []} />
         </ItemsWrapper>
       </ContentContainer>
     </Wrapper>
