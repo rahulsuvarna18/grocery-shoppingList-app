@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useRef, useEffect } from 'react';
-import styled from 'styled-components';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { createContext, useContext, useRef, useEffect } from "react";
+import styled from "styled-components";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalContextType {
   closeModal: () => void;
@@ -62,7 +62,7 @@ interface ModalProps {
 }
 
 // Move Button outside of the Modal component
-const ModalButton = styled.button<{ variant?: 'primary' | 'danger' | 'secondary' }>`
+const ModalButton = styled.button<{ $variant?: "primary" | "danger" | "secondary" }>`
   padding: 8px 16px;
   border-radius: 6px;
   border: none;
@@ -71,15 +71,15 @@ const ModalButton = styled.button<{ variant?: 'primary' | 'danger' | 'secondary'
   cursor: pointer;
   transition: all 0.2s;
 
-  ${({ variant = 'secondary' }) => {
-    switch (variant) {
-      case 'primary':
+  ${({ $variant = "secondary" }) => {
+    switch ($variant) {
+      case "primary":
         return `
           background-color: #3498db;
           color: white;
           &:hover { background-color: #2980b9; }
         `;
-      case 'danger':
+      case "danger":
         return `
           background-color: #e74c3c;
           color: white;
@@ -100,17 +100,17 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    
+
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
-    
+
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -127,13 +127,7 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <StyledModal
-            ref={modalRef}
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <StyledModal ref={modalRef} initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ duration: 0.2 }}>
             {children}
           </StyledModal>
         </Overlay>
@@ -166,9 +160,9 @@ Modal.Button = ModalButton;
 export const useModal = () => {
   const context = useContext(ModalContext);
   if (!context) {
-    throw new Error('useModal must be used within a Modal component');
+    throw new Error("useModal must be used within a Modal component");
   }
   return context;
 };
 
-export default Modal; 
+export default Modal;

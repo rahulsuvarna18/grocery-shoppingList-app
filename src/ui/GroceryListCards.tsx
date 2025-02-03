@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import useDeleteGroceryList from "../services/Mutations/useDeleteGroceryList";
 import Modal from "./Modal/Modal";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, Tag, Share2 } from "lucide-react";
 import useUpdateGroceryList from "../services/Mutations/useUpdateGroceryList";
 
 const Wrapper = styled.div`
@@ -14,10 +14,10 @@ const Wrapper = styled.div`
   justify-content: center;
 `;
 
-const Card = styled.div<{ $bgColor: string }>`
+const Card = styled.div`
   padding: 28px;
   border-radius: 12px;
-  background-color: ${(props) => props.$bgColor};
+  background-color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -40,6 +40,7 @@ const ListTitle = styled.h3`
   color: #2c3e50;
   margin: 0 0 12px 0;
   font-weight: 600;
+  position: relative;
 `;
 
 const ListInfo = styled.div`
@@ -80,8 +81,8 @@ const IconButton = styled.button<{ $variant?: "delete" }>`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${(props) => (props.$variant === "delete" ? "#fee2e2" : "#e0e7ff")};
-    color: ${(props) => (props.$variant === "delete" ? "#ef4444" : "#4f46e5")};
+    background-color: ${(props) => (props.$variant === "delete" ? "#fee2e2" : "#d1fae5")};
+    color: ${(props) => (props.$variant === "delete" ? "#ef4444" : "#4caf50")};
   }
 `;
 
@@ -121,13 +122,27 @@ const ColorOption = styled.button<{ $bgColor: string; $isSelected: boolean }>`
   }
 `;
 
-const COLORS = ["#FFFFFF", "#FF9B9B", "#FFB4B4", "#FFDEB4", "#FFE4C0", "#FFF3E2", "#B4E4FF", "#95BDFF", "#DFFFD8", "#B4F8C8", "#A0E4CB", "#FFABE1", "#C0DEFF", "#E3DFFD", "#FFF4D2", "#FFCEFE"];
+const ShareIcon = styled(Share2)`
+  position: absolute;
+  bottom: 20px;
+  right: 60px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #4caf50;
+  }
+`;
+
+const COLORS = ["#000000", "#FF9B9B", "#FFB4B4", "#FFDEB4", "#FFE4C0", "#FFF3E2", "#B4E4FF", "#95BDFF", "#DFFFD8", "#B4F8C8", "#A0E4CB", "#FFABE1", "#C0DEFF", "#E3DFFD", "#FFF4D2", "#FFCEFE"];
 
 interface GroceryListCardProps {
   groceryLists: {
     id: number;
+    created_at: string;
     grocery_list_name: string;
-    grocery_list_items: string;
+    user_id: string;
     color: string;
   }[];
 }
@@ -142,6 +157,8 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
   const [selectedList, setSelectedList] = useState<{ id: number; name: string; color: string } | null>(null);
   const [editName, setEditName] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
 
   const handleDelete = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -184,21 +201,34 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
     }
   };
 
-  const getItemCount = (items: string) => {
-    const itemList = items ? items.split(",").filter((item) => item.trim()) : [];
-    return `${itemList.length} ${itemList.length === 1 ? "item" : "items"}`;
+  const handleAddUser = () => {
+    console.log("Adding user:", email);
+    setShareModalOpen(false);
+    setEmail("");
+  };
+
+  const getItemCount = () => {
+    return "0 items";
   };
 
   return (
     <>
       <Wrapper>
         {groceryLists.map((groceryList) => (
-          <Card key={groceryList.id} onClick={() => navigate(`/list/${groceryList.grocery_list_name.toLowerCase().replace(/ /g, "-")}`)} $bgColor={groceryList.color || "#ffffff"}>
+          <Card key={groceryList.id} onClick={() => navigate(`/list/${groceryList.grocery_list_name.toLowerCase().replace(/ /g, "-")}`)}>
             <div>
               <ListTitle>{groceryList.grocery_list_name}</ListTitle>
-              <ListInfo>Created on {new Date().toLocaleDateString()}</ListInfo>
-              <ItemCount>{getItemCount(groceryList.grocery_list_items)}</ItemCount>
+              <ListInfo>Created on {new Date(groceryList.created_at).toLocaleDateString()}</ListInfo>
+              <ItemCount>{getItemCount()}</ItemCount>
+              <Tag size={18} color={groceryList.color || "#000"} style={{ position: "absolute", bottom: "20px", right: "20px" }} />
             </div>
+            <ShareIcon
+              size={18}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShareModalOpen(true);
+              }}
+            />
             <ButtonGroup>
               <IconButton
                 onClick={(e) =>
@@ -225,7 +255,7 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
         <Modal.Content>Are you sure you want to delete this list? This action cannot be undone.</Modal.Content>
         <Modal.Footer>
           <Modal.Button onClick={() => setModalOpen(false)}>Cancel</Modal.Button>
-          <Modal.Button variant="danger" onClick={confirmDelete}>
+          <Modal.Button $variant="danger" onClick={confirmDelete}>
             Delete
           </Modal.Button>
         </Modal.Footer>
@@ -243,8 +273,21 @@ const GroceryListCard: React.FC<GroceryListCardProps> = ({ groceryLists }) => {
         </Modal.Content>
         <Modal.Footer>
           <Modal.Button onClick={() => setEditModalOpen(false)}>Cancel</Modal.Button>
-          <Modal.Button onClick={handleUpdate} disabled={isUpdating || !editName.trim() || (editName === selectedList?.name && selectedColor === selectedList?.color)}>
+          <Modal.Button $variant="primary" onClick={handleUpdate} disabled={isUpdating || !editName.trim() || (editName === selectedList?.name && selectedColor === selectedList?.color)}>
             {isUpdating ? "Updating..." : "Update"}
+          </Modal.Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)}>
+        <Modal.Header>Share List</Modal.Header>
+        <Modal.Content>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter email to share..." />
+        </Modal.Content>
+        <Modal.Footer>
+          <Modal.Button onClick={() => setShareModalOpen(false)}>Cancel</Modal.Button>
+          <Modal.Button $variant="primary" onClick={handleAddUser}>
+            Add User
           </Modal.Button>
         </Modal.Footer>
       </Modal>

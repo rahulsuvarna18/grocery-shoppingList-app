@@ -89,7 +89,7 @@ const ListRecommendations = () => {
 
     // Simulate creation after a delay
     setTimeout(() => {
-      createGroceryList({ name: title, color: "#FFFFFF" });
+      createGroceryList({ name: title, color: "#000000" });
       setIsModalOpen(false);
     }, 900);
   };
