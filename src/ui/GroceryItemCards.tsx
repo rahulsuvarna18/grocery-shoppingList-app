@@ -8,6 +8,7 @@ import { getGroceryItemById } from "../services/apiGroceryItems";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import Modal from "./Modal/Modal";
 import useUpdateGroceryItemDescription from "../services/Mutations/useUpdateGroceryItemDescription";
+import supabase from "../services/supabase";
 
 type UserGroceryItem = Database["public"]["Tables"]["user_grocery_items"]["Row"];
 // type GroceryItem = Database["public"]["Tables"]["grocery_items"]["Row"];
@@ -67,6 +68,7 @@ interface GroceryItemCardProps {
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onToggleStatus, isRemoving, isToggling, listId }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { updateDescription, isUpdating } = useUpdateGroceryItemDescription();
+  const queryClient = useQueryClient();
 
   // Fetch grocery item data if we have a grocery_item_id
   const { data: groceryItem } = useQuery({
@@ -85,6 +87,22 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
       description: newDescription,
       groceryListId: listId,
     });
+  };
+
+  const handleUpdateQuantity = async (newQuantity: number) => {
+    try {
+      await supabase.from("user_grocery_items").update({ quantity: newQuantity }).eq("id", item.id);
+
+      // Invalidate the cache to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["groceryListItems", listId] });
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  const handleSaveChanges = (newDescription: string, newQuantity: number) => {
+    handleUpdateDescription(newDescription);
+    handleUpdateQuantity(newQuantity);
     setIsEditModalOpen(false);
   };
 
@@ -95,6 +113,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
         <ItemContent>
           <ItemName>{displayName}</ItemName>
           {item.description && <ItemDescription>{item.description}</ItemDescription>}
+          <ItemQuantity>Qty: {item.quantity || 1}</ItemQuantity>
         </ItemContent>
         <ItemActions>
           <ActionButton onClick={() => onToggleStatus(item.id, item.is_bought)} disabled={isToggling} title={item.is_bought ? "Mark as not bought" : "Mark as bought"}>
@@ -109,7 +128,17 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
         </ItemActions>
       </ItemCard>
 
-      <EditItemModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} itemName={displayName} currentDescription={item.description || ""} itemDetails={itemDetails} onUpdate={handleUpdateDescription} isUpdating={isUpdating} />
+      <EditItemModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        itemName={displayName}
+        currentDescription={item.description || ""}
+        itemDetails={itemDetails}
+        onUpdate={handleUpdateDescription}
+        onUpdateQuantity={handleUpdateQuantity}
+        currentQuantity={item.quantity || 1}
+        isUpdating={isUpdating}
+      />
     </>
   );
 };
@@ -121,25 +150,32 @@ interface EditItemModalProps {
   currentDescription: string;
   itemDetails: string[];
   onUpdate: (description: string) => void;
+  onUpdateQuantity: (quantity: number) => void;
+  currentQuantity: number;
   isUpdating: boolean;
 }
 
-const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, itemName, currentDescription, itemDetails, onUpdate, isUpdating }) => {
+const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, itemName, currentDescription, itemDetails, onUpdate, onUpdateQuantity, currentQuantity, isUpdating }) => {
   const [description, setDescription] = useState(currentDescription);
+  const [quantity, setQuantity] = useState(currentQuantity);
 
-  // Reset description when modal opens/closes
+  // Reset description and quantity when modal opens/closes
   useEffect(() => {
     setDescription(currentDescription);
-  }, [isOpen, currentDescription]);
+    setQuantity(currentQuantity);
+  }, [isOpen, currentDescription, currentQuantity]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdate(description.trim());
+    onUpdateQuantity(quantity);
+    onClose();
   };
 
   const handleClose = () => {
     onClose();
-    setDescription(currentDescription); // Reset on close
+    setDescription(currentDescription);
+    setQuantity(currentQuantity);
   };
 
   const handleItemDetailClick = (detail: string) => {
@@ -153,6 +189,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({ isOpen, onClose, itemName
       <Modal.Content>
         <EditForm onSubmit={handleSubmit}>
           <EditInput type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Add a description..." autoFocus />
+          <QuantityContainer>
+            <QuantityLabel>Quantity:</QuantityLabel>
+            <QuantityInput type="number" min="1" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+          </QuantityContainer>
           {itemDetails.length > 0 && (
             <ItemDetailsList>
               {itemDetails.map((detail, index) => (
@@ -321,5 +361,41 @@ const ItemDetailChip = styled.button`
 
   &:hover {
     background-color: #e1e1e1;
+  }
+`;
+
+const ItemQuantity = styled.span`
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+`;
+
+const QuantityContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+`;
+
+const QuantityLabel = styled.label`
+  font-size: 14px;
+  color: #666;
+`;
+
+const QuantityInput = styled.input`
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #4caf50;
+  }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 1;
   }
 `;
