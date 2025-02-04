@@ -100,11 +100,11 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
     }
   };
 
-  const handleSaveChanges = (newDescription: string, newQuantity: number) => {
-    handleUpdateDescription(newDescription);
-    handleUpdateQuantity(newQuantity);
-    setIsEditModalOpen(false);
-  };
+  // const handleSaveChanges = (newDescription: string, newQuantity: number) => {
+  //   handleUpdateDescription(newDescription);
+  //   handleUpdateQuantity(newQuantity);
+  //   setIsEditModalOpen(false);
+  // };
 
   return (
     <>

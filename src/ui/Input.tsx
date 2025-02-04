@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import useAddGroceryItem from "../services/Mutations/useAddGroceryItem";
 import useUpdateGroceryItemDescription from "../services/Mutations/useUpdateGroceryItemDescription";
 import useSearchGroceryItems from "../services/Mutations/useSearchGroceryItems";
-import { X } from "lucide-react";
+
 import { useQueryClient } from "@tanstack/react-query";
 import supabase from "../services/supabase";
 
@@ -93,10 +93,6 @@ const SearchContainer = styled.div`
   padding: 4px;
 `;
 
-const SearchIcon = styled.span`
-  color: #6b7280;
-`;
-
 const SuggestionsContainer = styled.div`
   border-top: 1px solid #e5e7eb;
   padding-top: 16px;
@@ -114,27 +110,6 @@ const SuggestionButton = styled.button<{ $isSelected?: boolean }>`
 
   &:hover {
     background-color: #f3f4f6;
-  }
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #f3f4f6;
-    color: #ef4444;
   }
 `;
 
