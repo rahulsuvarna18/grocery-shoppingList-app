@@ -17,6 +17,7 @@ interface AddGroceryItemProps {
   description?: string;
   isCustom: boolean;
   is_bought?: boolean;
+  quantity?: number;
 }
 
 export const getGroceryLists = async (): Promise<GroceryList[]> => {
@@ -86,7 +87,7 @@ export const createGroceryList = async ({ name, color }: CreateGroceryListProps)
   return data;
 };
 
-export const addItemToGroceryList = async ({ groceryListId, groceryItemId, name, categoryId, description, isCustom, is_bought }: AddGroceryItemProps): Promise<UserGroceryItem> => {
+export const addItemToGroceryList = async ({ groceryListId, groceryItemId, name, categoryId, description, isCustom, is_bought, quantity }: AddGroceryItemProps): Promise<UserGroceryItem> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -105,6 +106,7 @@ export const addItemToGroceryList = async ({ groceryListId, groceryItemId, name,
         description,
         is_custom: isCustom,
         is_bought: is_bought || false,
+        quantity: quantity || 1,
       },
     ])
     .select()

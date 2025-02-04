@@ -9,7 +9,8 @@ import Error from "../ui/Error";
 import useUpdateInventoryItem from "../services/Mutations/useUpdateInventoryItem";
 import useDeleteInventoryItem from "../services/Mutations/useDeleteInventoryItem";
 import EmptyState from "../components/EmptyState/EmptyState";
-
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -66,6 +67,30 @@ const Card = styled.div`
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+`;
+const BackButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: white;
+  color: #43a047;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -213,6 +238,7 @@ interface InventoryItem {
 }
 
 const Inventory = () => {
+  const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [newItem, setNewItem] = useState({
@@ -277,6 +303,10 @@ const Inventory = () => {
           <Plus size={18} />
           Add Item
         </CreateButton>
+        <BackButton onClick={() => navigate(-1)}>
+          <ArrowLeft size={18} />
+          Back to Lists
+        </BackButton>
       </Header>
 
       {!itemsData?.length ? (

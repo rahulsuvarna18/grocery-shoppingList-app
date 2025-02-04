@@ -106,6 +106,7 @@ export interface Database {
           is_bought: boolean;
           bought_at: string | null;
           added_at: string;
+          quantity: number | null;
         };
         Insert: {
           id?: number;
@@ -120,6 +121,7 @@ export interface Database {
           is_bought?: boolean;
           bought_at?: string | null;
           added_at?: string;
+          quantity?: number | null;
         };
         Update: {
           id?: number;
@@ -134,6 +136,7 @@ export interface Database {
           is_bought?: boolean;
           bought_at?: string | null;
           added_at?: string;
+          quantity?: number | null;
         };
       };
       user_grocery_item_history: {

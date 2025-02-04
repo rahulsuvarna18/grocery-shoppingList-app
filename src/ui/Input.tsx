@@ -4,7 +4,9 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import useAddGroceryItem from "../services/Mutations/useAddGroceryItem";
 import useUpdateGroceryItemDescription from "../services/Mutations/useUpdateGroceryItemDescription";
 import useSearchGroceryItems from "../services/Mutations/useSearchGroceryItems";
-import { X } from "lucide-react";
+
+import { useQueryClient } from "@tanstack/react-query";
+import supabase from "../services/supabase";
 
 const InputContainer = styled.div`
   width: 100%;
@@ -91,10 +93,6 @@ const SearchContainer = styled.div`
   padding: 4px;
 `;
 
-const SearchIcon = styled.span`
-  color: #6b7280;
-`;
-
 const SuggestionsContainer = styled.div`
   border-top: 1px solid #e5e7eb;
   padding-top: 16px;
@@ -112,27 +110,6 @@ const SuggestionButton = styled.button<{ $isSelected?: boolean }>`
 
   &:hover {
     background-color: #f3f4f6;
-  }
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #f3f4f6;
-    color: #ef4444;
   }
 `;
 
@@ -200,17 +177,18 @@ interface SelectedItem {
   item_details: string[];
   createdItemId?: number;
   isCustom: boolean;
+  quantity?: number;
 }
 
 const Input: React.FC<InputProps> = ({ selectedListId }) => {
   const { register, handleSubmit, reset, watch, setValue } = useForm<FormValues>();
   const { addGroceryItem, isAdding } = useAddGroceryItem();
-  // const { updateDescription, isUpdating } = useUpdateGroceryItemDescription();
   const { updateDescription } = useUpdateGroceryItemDescription();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedDetails, setSelectedDetails] = useState<string[]>([]);
   const [currentItem, setCurrentItem] = useState<SelectedItem | null>(null);
+  const [quantity, setQuantity] = useState<number>(1);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const query = watch("newItem", "");
@@ -219,6 +197,9 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
   // Add new state for description input
   const [descriptionInput, setDescriptionInput] = useState("");
   const descriptionInputRef = useRef<HTMLInputElement>(null);
+
+  // const supabase = useSupabase();
+  const queryClient = useQueryClient();
 
   const capitalizeFirstLetter = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -303,12 +284,6 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
   const handleDetailClick = (detail: string) => {
     if (!currentItem?.createdItemId) return;
 
-    // Check if the detail is already selected
-    const isSelected = selectedDetails.includes(detail);
-    if (isSelected) {
-      return; // If already selected, do nothing
-    }
-
     // Add the detail to the selected details state
     setSelectedDetails((prev) => [...prev, detail]);
 
@@ -318,6 +293,23 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
       description: detail,
       groceryListId: selectedListId,
     });
+  };
+
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (!currentItem?.createdItemId) return;
+
+    setQuantity(newQuantity);
+    try {
+      await supabase.from("user_grocery_items").update({ quantity: newQuantity }).eq("id", currentItem.createdItemId);
+
+      // Update the current item state with new quantity
+      setCurrentItem((prev) => (prev ? { ...prev, quantity: newQuantity } : null));
+
+      // Invalidate the cache to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["groceryListItems", selectedListId] });
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
   };
 
   const handleDescriptionSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -349,6 +341,7 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
           name: undefined,
           isCustom: false,
           is_bought: false,
+          quantity: quantity,
         },
         {
           onSuccess: (newItem) => {
@@ -357,10 +350,12 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
               name: matchingItem.name,
               item_details: matchingItem.item_details || [],
               createdItemId: newItem.id,
-              isCustom: false, // Add this field
+              isCustom: false,
+              quantity: quantity,
             });
             setSelectedDetails([]);
             setValue("newItem", "");
+            setQuantity(1); // Reset quantity
           },
         }
       );
@@ -372,19 +367,21 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
           name: capitalizedItem,
           isCustom: true,
           is_bought: false,
+          quantity: quantity,
         },
         {
           onSuccess: (newItem) => {
-            // Show description input for custom items
             setCurrentItem({
               id: newItem.id,
               name: capitalizedItem,
               item_details: [],
               createdItemId: newItem.id,
-              isCustom: true, // Add this field
+              isCustom: true,
+              quantity: quantity,
             });
             setDescriptionInput("");
             setValue("newItem", "");
+            setQuantity(1); // Reset quantity
           },
         }
       );
@@ -436,7 +433,6 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
       return (
         <>
           <SearchContainer>
-            <SearchIcon>🔍</SearchIcon>
             <StyledInput {...register("newItem")} placeholder="Add an item to your list..." onKeyDown={handleUIKeyDown} $isExpanded={true} />
           </SearchContainer>
 
@@ -482,19 +478,31 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
       <DetailsContainer>
         <DetailsHeader>
           <ItemTitle>{currentItem.name}</ItemTitle>
-          <ItemSubtitle>{currentItem.isCustom ? "Add a description for your item" : "Select item details to add to your list"}</ItemSubtitle>
+          <ItemSubtitle>{currentItem.isCustom ? "Add details for your item" : "Select item details to add to your list"}</ItemSubtitle>
         </DetailsHeader>
 
         {currentItem.isCustom ? (
-          <DescriptionInput ref={descriptionInputRef} value={descriptionInput} onChange={(e) => setDescriptionInput(e.target.value)} onKeyDown={handleDescriptionSubmit} placeholder="Type a description and press Enter..." $isExpanded={true} />
+          <>
+            <DescriptionInput ref={descriptionInputRef} value={descriptionInput} onChange={(e) => setDescriptionInput(e.target.value)} onKeyDown={handleDescriptionSubmit} placeholder="Type a description and press Enter..." $isExpanded={true} />
+            <QuantityContainer>
+              <QuantityLabel>Quantity:</QuantityLabel>
+              <QuantityInput type="number" min="1" value={quantity} onChange={(e) => handleQuantityChange(Math.max(1, parseInt(e.target.value) || 1))} />
+            </QuantityContainer>
+          </>
         ) : (
-          <DetailBoxesContainer>
-            {currentItem.item_details.map((detail) => (
-              <DetailBox key={detail} onClick={() => handleDetailClick(detail)} $isSelected={selectedDetails.includes(detail)} onKeyDown={handleUIKeyDown} tabIndex={0}>
-                {detail}
-              </DetailBox>
-            ))}
-          </DetailBoxesContainer>
+          <>
+            <DetailBoxesContainer>
+              {currentItem.item_details.map((detail) => (
+                <DetailBox key={detail} onClick={() => handleDetailClick(detail)} $isSelected={selectedDetails.includes(detail)} onKeyDown={handleUIKeyDown} tabIndex={0}>
+                  {detail}
+                </DetailBox>
+              ))}
+            </DetailBoxesContainer>
+            <QuantityContainer>
+              <QuantityLabel>Quantity:</QuantityLabel>
+              <QuantityInput type="number" min="1" value={quantity} onChange={(e) => handleQuantityChange(Math.max(1, parseInt(e.target.value) || 1))} />
+            </QuantityContainer>
+          </>
         )}
       </DetailsContainer>
     );
@@ -511,14 +519,46 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
 
       <ExpandedModal ref={modalRef} $isExpanded={isExpanded} tabIndex={-1}>
         <ModalContent>
-          <CloseButton onClick={handleClose}>
+          {/* <CloseButton onClick={handleClose}>
             <X size={18} />
-          </CloseButton>
+          </CloseButton> */}
           {renderModalContent()}
         </ModalContent>
       </ExpandedModal>
     </InputContainer>
   );
 };
+
+// Add these new styled components at the bottom of the file
+const QuantityContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 0 16px;
+`;
+
+const QuantityLabel = styled.label`
+  font-size: 14px;
+  color: #666;
+`;
+
+const QuantityInput = styled.input`
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #4caf50;
+  }
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 1;
+  }
+`;
 
 export default Input;

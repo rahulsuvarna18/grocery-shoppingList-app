@@ -12,6 +12,7 @@ interface AddGroceryItemParams {
   description?: string;
   isCustom: boolean;
   is_bought?: boolean;
+  quantity?: number;
 }
 
 const useAddGroceryItem = () => {
