@@ -8,21 +8,8 @@ import useSearchGroceryItems from "../services/Mutations/useSearchGroceryItems";
 import { useQueryClient } from "@tanstack/react-query";
 import supabase from "../services/supabase";
 
-const InputContainer = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin: 24px 0;
-  position: relative;
-`;
-
-const Form = styled.form`
-  display: flex;
-  gap: 12px;
-  width: 100%;
-`;
-
 const StyledInput = styled.input<{ $isExpanded?: boolean }>`
-  flex: 1;
+  width: 100%;
   padding: 12px 16px;
   font-size: 15px;
   border: 1px solid #e0e0e0;
@@ -42,26 +29,37 @@ const StyledInput = styled.input<{ $isExpanded?: boolean }>`
   }
 `;
 
-const AddButton = styled.button`
+const InputContainer = styled.div`
+  width: 100%;
+  max-width: 600px;
+  margin: 24px 0;
+  position: relative;
+`;
+
+const AddItemButton = styled.button`
+  width: 100%;
   padding: 12px 24px;
-  background-color: #4caf50;
-  color: white;
+  font-size: 15px;
   border: none;
   border-radius: 8px;
-  font-weight: 500;
+  background-color: #4caf50;
+  color: white;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
   transition: all 0.2s ease;
-  white-space: nowrap;
 
   &:hover {
     background-color: #43a047;
     transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  &:disabled {
-    background-color: #a8e0ab;
-    cursor: not-allowed;
-    transform: none;
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -295,9 +293,10 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
     });
   };
 
-  const handleQuantityChange = async (newQuantity: number) => {
+  const handleQuantityChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!currentItem?.createdItemId) return;
 
+    const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
     setQuantity(newQuantity);
     try {
       await supabase.from("user_grocery_items").update({ quantity: newQuantity }).eq("id", currentItem.createdItemId);
@@ -486,7 +485,7 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
             <DescriptionInput ref={descriptionInputRef} value={descriptionInput} onChange={(e) => setDescriptionInput(e.target.value)} onKeyDown={handleDescriptionSubmit} placeholder="Type a description and press Enter..." $isExpanded={true} />
             <QuantityContainer>
               <QuantityLabel>Quantity:</QuantityLabel>
-              <QuantityInput type="number" min="1" value={quantity} onChange={(e) => handleQuantityChange(Math.max(1, parseInt(e.target.value) || 1))} />
+              <QuantityInput type="number" min="1" value={quantity} onChange={handleQuantityChange} />
             </QuantityContainer>
           </>
         ) : (
@@ -500,7 +499,7 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
             </DetailBoxesContainer>
             <QuantityContainer>
               <QuantityLabel>Quantity:</QuantityLabel>
-              <QuantityInput type="number" min="1" value={quantity} onChange={(e) => handleQuantityChange(Math.max(1, parseInt(e.target.value) || 1))} />
+              <QuantityInput type="number" min="1" value={quantity} onChange={handleQuantityChange} />
             </QuantityContainer>
           </>
         )}
@@ -510,20 +509,12 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
 
   return (
     <InputContainer>
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <StyledInput {...register("newItem", { required: "Please enter a grocery item." })} ref={inputRef} type="text" placeholder="Add an item to your list..." onClick={handleExpand} onKeyDown={handleUIKeyDown} $isExpanded={isExpanded} />
-        <AddButton type="submit" disabled={isAdding}>
-          {isAdding ? "Adding..." : "Add Item"}
-        </AddButton>
-      </Form>
+      <AddItemButton type="button" onClick={handleExpand}>
+        + Add Item
+      </AddItemButton>
 
       <ExpandedModal ref={modalRef} $isExpanded={isExpanded} tabIndex={-1}>
-        <ModalContent>
-          {/* <CloseButton onClick={handleClose}>
-            <X size={18} />
-          </CloseButton> */}
-          {renderModalContent()}
-        </ModalContent>
+        <ModalContent>{renderModalContent()}</ModalContent>
       </ExpandedModal>
     </InputContainer>
   );
