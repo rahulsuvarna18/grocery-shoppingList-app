@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { ShoppingBasket, Edit2 } from "lucide-react";
+import { ShoppingBasket, Edit2, Package } from "lucide-react";
 import EmptyState from "../components/EmptyState/EmptyState";
 import { Database } from "../types/database.types";
 import { removeItemFromGroceryList, updateGroceryItemStatus } from "../services/apiGroceryList";
@@ -8,6 +8,7 @@ import { getGroceryItemById } from "../services/apiGroceryItems";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import Modal from "./Modal/Modal";
 import useUpdateGroceryItemDescription from "../services/Mutations/useUpdateGroceryItemDescription";
+import useAddToInventory from "../services/Mutations/useAddToInventory";
 import supabase from "../services/supabase";
 
 type UserGroceryItem = Database["public"]["Tables"]["user_grocery_items"]["Row"];
@@ -20,6 +21,8 @@ interface GroceryItemCardsProps {
 
 const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryItems, id }) => {
   const queryClient = useQueryClient();
+  const { addToInventory } = useAddToInventory();
+  const [showConfirmAllModal, setShowConfirmAllModal] = useState(false);
 
   const { mutate: removeItem, isPending: isRemoving } = useMutation({
     mutationFn: removeItemFromGroceryList,
@@ -43,16 +46,71 @@ const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryItems, id })
     toggleItemStatus({ itemId, isBought: !currentStatus });
   };
 
+  const handleAddAllToInventory = async () => {
+    // Get all bought items with their correct names
+    const boughtItems = await Promise.all(
+      groceryItems
+        .filter((item) => item.is_bought)
+        .map(async (item) => {
+          let name = item.name || "";
+          if (item.grocery_item_id) {
+            try {
+              const groceryItem = await getGroceryItemById(item.grocery_item_id);
+              name = groceryItem.name;
+            } catch (error) {
+              console.error("Error fetching grocery item:", error);
+            }
+          }
+          return {
+            name,
+            quantity: item.quantity || 1,
+            unit: "unit",
+          };
+        })
+    );
+
+    if (boughtItems.length > 0) {
+      addToInventory(boughtItems);
+      setShowConfirmAllModal(false);
+    }
+  };
+
   if (groceryItems.length === 0) {
     return <EmptyState icon={<ShoppingBasket size={32} />} title="Your Shopping List is Empty" text="Start adding items to your list using the input field above. Each item you add will appear here as a card." />;
   }
 
+  const hasBoughtItems = groceryItems.some((item) => item.is_bought);
+  const boughtItemsCount = groceryItems.filter((item) => item.is_bought).length;
+
   return (
-    <Wrapper>
-      {groceryItems.map((item) => (
-        <GroceryItemCard key={item.id} item={item} onDelete={handleDelete} onToggleStatus={handleToggleStatus} isRemoving={isRemoving} isToggling={isToggling} listId={id} />
-      ))}
-    </Wrapper>
+    <>
+      {hasBoughtItems && (
+        <AddAllToInventoryButton onClick={() => setShowConfirmAllModal(true)}>
+          <Package size={16} />
+          Add all bought items to inventory
+        </AddAllToInventoryButton>
+      )}
+      <Wrapper>
+        {groceryItems.map((item) => (
+          <GroceryItemCard key={item.id} item={item} onDelete={handleDelete} onToggleStatus={handleToggleStatus} isRemoving={isRemoving} isToggling={isToggling} listId={id} />
+        ))}
+      </Wrapper>
+
+      <Modal isOpen={showConfirmAllModal} onClose={() => setShowConfirmAllModal(false)}>
+        <Modal.Header>Confirm Add to Inventory</Modal.Header>
+        <Modal.Content>
+          <p>
+            Are you sure you want to add {boughtItemsCount} item{boughtItemsCount !== 1 ? "s" : ""} to your inventory?
+          </p>
+        </Modal.Content>
+        <Modal.Footer>
+          <Modal.Button onClick={() => setShowConfirmAllModal(false)}>Cancel</Modal.Button>
+          <Modal.Button $variant="primary" onClick={handleAddAllToInventory}>
+            Add to Inventory
+          </Modal.Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 };
 
@@ -67,7 +125,9 @@ interface GroceryItemCardProps {
 
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onToggleStatus, isRemoving, isToggling, listId }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { updateDescription, isUpdating } = useUpdateGroceryItemDescription();
+  const { addToInventory } = useAddToInventory();
   const queryClient = useQueryClient();
 
   // Fetch grocery item data if we have a grocery_item_id
@@ -100,15 +160,25 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
     }
   };
 
-  // const handleSaveChanges = (newDescription: string, newQuantity: number) => {
-  //   handleUpdateDescription(newDescription);
-  //   handleUpdateQuantity(newQuantity);
-  //   setIsEditModalOpen(false);
-  // };
+  const handleAddToInventory = () => {
+    addToInventory([
+      {
+        name: displayName,
+        quantity: item.quantity || 1,
+        unit: "unit",
+      },
+    ]);
+    setShowConfirmModal(false);
+  };
 
   return (
     <>
       <ItemCard $isBought={item.is_bought}>
+        {item.is_bought && (
+          <AddToInventoryButton onClick={() => setShowConfirmModal(true)} title="Add to inventory">
+            <Package size={14} />
+          </AddToInventoryButton>
+        )}
         <ItemInitial>{displayName.charAt(0).toUpperCase()}</ItemInitial>
         <ItemContent>
           <ItemName>{displayName}</ItemName>
@@ -139,6 +209,19 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
         currentQuantity={item.quantity || 1}
         isUpdating={isUpdating}
       />
+
+      <Modal isOpen={showConfirmModal} onClose={() => setShowConfirmModal(false)}>
+        <Modal.Header>Confirm Add to Inventory</Modal.Header>
+        <Modal.Content>
+          <p>Are you sure you want to add "{displayName}" to your inventory?</p>
+        </Modal.Content>
+        <Modal.Footer>
+          <Modal.Button onClick={() => setShowConfirmModal(false)}>Cancel</Modal.Button>
+          <Modal.Button $variant="primary" onClick={handleAddToInventory}>
+            Add to Inventory
+          </Modal.Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
@@ -397,5 +480,51 @@ const QuantityInput = styled.input`
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
     opacity: 1;
+  }
+`;
+
+const AddToInventoryButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #4caf50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f0fdf4;
+    transform: scale(1.05);
+  }
+`;
+
+const AddAllToInventoryButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;

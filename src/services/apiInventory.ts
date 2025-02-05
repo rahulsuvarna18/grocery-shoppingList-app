@@ -83,3 +83,27 @@ export const deleteInventoryItem = async (id: string) => {
     throw new Error(error.message);
   }
 };
+
+export const addItemsToInventory = async (items: { name: string; quantity: number; unit?: string }[]): Promise<InventoryItem[]> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("User not authenticated");
+
+  const itemsToInsert = items.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    unit: item.unit || "unit", // Default to "unit" if not provided
+    user_id: user.id,
+  }));
+
+  const { data, error } = await supabase.from("inventory_items").insert(itemsToInsert).select();
+
+  if (error) {
+    console.error("Error adding items to inventory:", error);
+    throw new Error(error.message);
+  }
+
+  return data as InventoryItem[];
+};
