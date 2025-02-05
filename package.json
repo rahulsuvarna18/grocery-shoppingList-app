@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://rahulsuvarna18.github.io/grocerai",
+  "homepage": "https://rahulsuvarna18.github.io/grocery-app",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
