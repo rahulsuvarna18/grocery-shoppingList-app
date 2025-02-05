@@ -180,7 +180,7 @@ interface SelectedItem {
 
 const Input: React.FC<InputProps> = ({ selectedListId }) => {
   const { register, handleSubmit, reset, watch, setValue } = useForm<FormValues>();
-  const { addGroceryItem, isAdding } = useAddGroceryItem();
+  const { addGroceryItem } = useAddGroceryItem();
   const { updateDescription } = useUpdateGroceryItemDescription();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
