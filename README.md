@@ -10,21 +10,6 @@
 
 ![App Demo](demo.gif)
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-- [Usage](#usage)
-- [Architecture](#architecture)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
 
 ## 🎯 Overview
 
@@ -161,31 +146,5 @@ CREATE TABLE grocery_lists (
 );
 ```
 
-## 🤝 Contributing
 
-We welcome contributions! Please follow these steps:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow the existing code style
-- Write meaningful commit messages
-- Add appropriate documentation
-- Include tests for new features
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Contact
-
-Project Link: [https://github.com/yourusername/smart-grocery-manager](https://github.com/yourusername/smart-grocery-manager)
-
----
-
-Made with ❤️ by [Your Name]
