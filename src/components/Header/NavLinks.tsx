@@ -1,5 +1,5 @@
 import { NavLink } from "./Header.styles"; // Adjust the import based on your styles location
-import { House, Boxes } from "lucide-react";
+import { House, Boxes, History } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 
@@ -23,6 +23,10 @@ const NavLinks = () => {
       <NavLink as="button" onClick={() => navigate("/inventory")} $active={location.pathname === "/inventory"}>
         <Boxes size={18} />
         Inventory
+      </NavLink>
+      <NavLink as="button" onClick={() => navigate("/inventory")} $active={location.pathname === "/inventory"}>
+        <History size={18} />
+        History
       </NavLink>
     </NavContainer>
   );
