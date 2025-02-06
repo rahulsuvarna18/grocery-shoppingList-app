@@ -122,7 +122,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     }
   }, [user, navigate]);
 
@@ -132,6 +132,10 @@ const Login = () => {
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/home`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
         },
       });
 

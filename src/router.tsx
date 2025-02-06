@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import HomePage from "./pages/Home";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
@@ -28,7 +28,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-export const router = createHashRouter([
+export const router = createBrowserRouter([
   {
     path: "/",
     element: (
@@ -76,5 +76,9 @@ export const router = createHashRouter([
         <Dashboard />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);
