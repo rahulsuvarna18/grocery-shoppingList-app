@@ -14,6 +14,11 @@ import supabase from "../services/supabase";
 type UserGroceryItem = Database["public"]["Tables"]["user_grocery_items"]["Row"];
 // type GroceryItem = Database["public"]["Tables"]["grocery_items"]["Row"];
 
+interface DeleteItemParams {
+  itemId: number;
+  addToHistory: boolean;
+}
+
 interface GroceryItemCardsProps {
   groceryItems: UserGroceryItem[];
   id: number;
@@ -24,8 +29,8 @@ const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryItems, id })
   const { addToInventory } = useAddToInventory();
   const [showConfirmAllModal, setShowConfirmAllModal] = useState(false);
 
-  const { mutate: removeItem, isPending: isRemoving } = useMutation({
-    mutationFn: removeItemFromGroceryList,
+  const { mutate: removeItem, isPending: isRemoving } = useMutation<void, Error, DeleteItemParams>({
+    mutationFn: (params: DeleteItemParams) => removeItemFromGroceryList(params.itemId, params.addToHistory),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groceryListItems", id] });
     },
@@ -38,8 +43,8 @@ const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryItems, id })
     },
   });
 
-  const handleDelete = (itemId: number) => {
-    removeItem(itemId);
+  const handleDelete = (itemId: number, addToHistory: boolean = true) => {
+    removeItem({ itemId, addToHistory });
   };
 
   const handleToggleStatus = (itemId: number, currentStatus: boolean) => {
@@ -116,7 +121,7 @@ const GroceryItemCards: React.FC<GroceryItemCardsProps> = ({ groceryItems, id })
 
 interface GroceryItemCardProps {
   item: UserGroceryItem;
-  onDelete: (id: number) => void;
+  onDelete: (id: number, addToHistory: boolean) => void;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   isRemoving: boolean;
   isToggling: boolean;
@@ -126,9 +131,16 @@ interface GroceryItemCardProps {
 const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onToggleStatus, isRemoving, isToggling, listId }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [addToHistory, setAddToHistory] = useState(item.is_bought);
   const { updateDescription, isUpdating } = useUpdateGroceryItemDescription();
   const { addToInventory } = useAddToInventory();
   const queryClient = useQueryClient();
+
+  // Reset addToHistory state when is_bought changes
+  useEffect(() => {
+    setAddToHistory(item.is_bought);
+  }, [item.is_bought]);
 
   // Fetch grocery item data if we have a grocery_item_id
   const { data: groceryItem } = useQuery({
@@ -171,6 +183,11 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
     setShowConfirmModal(false);
   };
 
+  const handleDelete = () => {
+    onDelete(item.id, addToHistory);
+    setShowDeleteConfirmModal(false);
+  };
+
   return (
     <>
       <ItemCard $isBought={item.is_bought}>
@@ -192,7 +209,7 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
           <ActionButton onClick={() => setIsEditModalOpen(true)} disabled={isUpdating} title="Edit item" className="edit">
             <Edit2 size={14} />
           </ActionButton>
-          <ActionButton onClick={() => onDelete(item.id)} disabled={isRemoving} title="Remove item" className="delete">
+          <ActionButton onClick={() => setShowDeleteConfirmModal(true)} disabled={isRemoving} title="Remove item" className="delete">
             ×
           </ActionButton>
         </ItemActions>
@@ -219,6 +236,23 @@ const GroceryItemCard: React.FC<GroceryItemCardProps> = ({ item, onDelete, onTog
           <Modal.Button onClick={() => setShowConfirmModal(false)}>Cancel</Modal.Button>
           <Modal.Button $variant="primary" onClick={handleAddToInventory}>
             Add to Inventory
+          </Modal.Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal isOpen={showDeleteConfirmModal} onClose={() => setShowDeleteConfirmModal(false)}>
+        <Modal.Header>Confirm Delete</Modal.Header>
+        <Modal.Content>
+          <p>Are you sure you want to delete "{displayName}"?</p>
+          <CheckboxContainer>
+            <input type="checkbox" id="addToHistory" checked={addToHistory} onChange={(e) => setAddToHistory(e.target.checked)} />
+            <label htmlFor="addToHistory">Add to history for future analysis</label>
+          </CheckboxContainer>
+        </Modal.Content>
+        <Modal.Footer>
+          <Modal.Button onClick={() => setShowDeleteConfirmModal(false)}>Cancel</Modal.Button>
+          <Modal.Button $variant="primary" onClick={handleDelete}>
+            Delete Item
           </Modal.Button>
         </Modal.Footer>
       </Modal>
@@ -526,5 +560,27 @@ const AddAllToInventoryButton = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  label {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
   }
 `;

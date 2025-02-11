@@ -171,11 +171,47 @@ export const deleteGroceryList = async (id: number): Promise<void> => {
   }
 };
 
-export const removeItemFromGroceryList = async (itemId: number): Promise<void> => {
-  const { error } = await supabase.from("user_grocery_items").delete().eq("id", itemId);
+export const removeItemFromGroceryList = async (itemId: number, addToHistory: boolean = true): Promise<void> => {
+  // First get the item details
+  const { data: item, error: fetchError } = await supabase.from("user_grocery_items").select("*").eq("id", itemId).single();
 
-  if (error) {
-    console.error("Error removing item from grocery list:", error);
+  if (fetchError) {
+    console.error("Error fetching item details:", fetchError);
+    throw new Error("Item details could not be fetched");
+  }
+
+  if (!item) {
+    throw new Error("Item not found");
+  }
+
+  if (addToHistory) {
+    // Add to history
+    const { error: historyError } = await supabase.from("user_grocery_item_history").insert([
+      {
+        user_id: item.user_id,
+        grocery_list_id: item.grocery_list_id,
+        grocery_item_id: item.grocery_item_id,
+        name: item.name,
+        category_id: item.category_id,
+        description: item.description,
+        is_custom: item.is_custom,
+        bought_at: item.bought_at || new Date().toISOString(),
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (historyError) {
+      console.error("Error adding item to history:", historyError);
+      throw new Error("Item could not be added to history");
+    }
+  }
+
+  // Then delete the item
+  const { error: deleteError } = await supabase.from("user_grocery_items").delete().eq("id", itemId);
+
+  if (deleteError) {
+    console.error("Error removing item from grocery list:", deleteError);
     throw new Error("Item could not be removed from grocery list");
   }
 };
