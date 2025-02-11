@@ -34,10 +34,13 @@ const InputContainer = styled.div`
   max-width: 600px;
   margin: 24px 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const AddItemButton = styled.button`
-  width: 100%;
+  width: 35%;
   padding: 12px 24px;
   font-size: 15px;
   border: none;
@@ -477,7 +480,7 @@ const Input: React.FC<InputProps> = ({ selectedListId }) => {
       <DetailsContainer>
         <DetailsHeader>
           <ItemTitle>{currentItem.name}</ItemTitle>
-          <ItemSubtitle>{currentItem.isCustom ? "Add details for your item" : "Select item details to add to your list"}</ItemSubtitle>
+          <ItemSubtitle>Add details for your item</ItemSubtitle>
         </DetailsHeader>
 
         {currentItem.isCustom ? (

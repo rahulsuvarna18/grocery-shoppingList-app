@@ -24,7 +24,7 @@ const NavLinks = () => {
         <Boxes size={18} />
         Inventory
       </NavLink>
-      <NavLink as="button" onClick={() => navigate("/inventory")} $active={location.pathname === "/inventory"}>
+      <NavLink as="button" onClick={() => navigate("/history")} $active={location.pathname === "/history"}>
         <History size={18} />
         History
       </NavLink>

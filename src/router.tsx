@@ -7,6 +7,7 @@ import AppLayout from "./ui/AppLayout";
 import { useAuth } from "./context/AuthContext";
 import Inventory from "./pages/Inventory";
 import Dashboard from "./pages/Dashboard";
+import History from "./pages/History";
 // import Dashboard from "./pages/Dashboard";
 
 // Protected Route wrapper component
@@ -74,6 +75,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/history",
+    element: (
+      <ProtectedRoute>
+        <History />
       </ProtectedRoute>
     ),
   },
