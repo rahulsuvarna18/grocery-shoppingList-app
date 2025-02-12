@@ -1,77 +1,66 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { getGroceryLists } from "../services/apiGroceryList";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Error from "../ui/Error";
 import styled from "styled-components";
-// import Input from "../ui/Input";
-// import RecentlyDeleted from "./RecentlyDeleted";
-// import GroceryItemCards from "../ui/GroceryItemCards";
-import GroceryListCard from "../ui/GroceryListCards";
-import CreateGroceryList from "./CreateGroceryList";
+import Input from "../ui/Input";
+import RecentlyDeleted from "./RecentlyDeleted";
+import GroceryItemCards from "../ui/GroceryItemCards";
 
-// const Wrapper = styled.div`
-//   display: flex;
-//   flex-wrap: wrap;
-//   gap: 10px;
-// `;
+const Wrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-  background: #f8f9fa;
-  border-radius: 12px;
-  margin-top: 2rem;
+  gap: 10px;
+`;
+
+const Card = styled.div`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
+`;
+
+const ItemsWrapper = styled.div`
+  display: flex;
+  flex-wrap: wrap; /* Allows wrapping of grocery item cards */
+  gap: 10px;
+`;
+
+const ButtonWrapper = styled.div`
   width: 100%;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
 `;
 
-const EmptyStateTitle = styled.h3`
-  font-size: 1.25rem;
-  color: #333;
-  margin-bottom: 0.5rem;
+const BackButton = styled.button`
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+    transition: background-color 0.3s ease;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 4px #007bff;
+  }
 `;
-
-const EmptyStateText = styled.p`
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #666;
-`;
-
-// const ItemsWrapper = styled.div`
-//   display: flex;
-//   flex-wrap: wrap; /* Allows wrapping of grocery item cards */
-//   gap: 10px; /* Adds space between items */
-//   justify-content: left; /* Centers items horizontally */
-
-//   width: 100%; /* Ensures it spans the full width of the parent */
-// `;
-
-// const ButtonWrapper = styled.div`
-//   width: 100%;
-//   margin-top: 20px;
-//   display: flex;
-//   justify-content: center;
-// `;
-
-// const BackButton = styled.button`
-//   padding: 10px 15px;
-//   background-color: #007bff;
-//   color: white;
-//   border: none;
-//   border-radius: 5px;
-//   font-size: 16px;
-//   cursor: pointer;
-
-//   &:hover {
-//     background-color: #0056b3;
-//     transition: background-color 0.3s ease;
-//   }
-
-//   &:focus {
-//     outline: none;
-//     box-shadow: 0 0 4px #007bff;
-//   }
-// `;
 
 export const Lists = () => {
   const {
@@ -83,20 +72,36 @@ export const Lists = () => {
     queryFn: getGroceryLists,
   });
 
+  const [selectedList, setSelectedList] = useState<number | null>(null);
+
   if (isPending) return <LoadingSpinner />;
   if (error) return <Error message={error.message} />;
 
+  // If a list is selected, show grocery items
+  if (selectedList !== null) {
+    // const selectedGroceryList = groceryLists?.find((list) => list.id === selectedList);
+
+    return (
+      <Wrapper>
+        <Input selectedListId={selectedList} />
+        <ItemsWrapper>
+          <GroceryItemCards id={selectedList} groceryItems={[]} />
+        </ItemsWrapper>
+        <ButtonWrapper>
+          <BackButton onClick={() => setSelectedList(null)}>Back to List</BackButton>
+        </ButtonWrapper>
+      </Wrapper>
+    );
+  }
+
+  // Show grocery list names
   return (
-    <>
-      <CreateGroceryList />
-      {groceryLists && groceryLists.length > 0 ? (
-        <GroceryListCard groceryLists={groceryLists} />
-      ) : (
-        <EmptyState>
-          <EmptyStateTitle>No Shopping Lists Yet</EmptyStateTitle>
-          <EmptyStateText>Create your first shopping list above to get started with organizing your groceries.</EmptyStateText>
-        </EmptyState>
-      )}
-    </>
+    <Wrapper>
+      {groceryLists?.map((groceryList) => (
+        <Card key={groceryList.id} onClick={() => setSelectedList(groceryList.id)}>
+          {groceryList.grocery_list_name}
+        </Card>
+      ))}
+    </Wrapper>
   );
 };
